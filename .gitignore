@@ -23,9 +23,19 @@ pids
 *.pid.lock
 
 # Database files
+*.db
 *.db-journal
 *.db-wal
 *.db-shm
+data/*.db
+data/archives/
+
+# Runtime result files that change during operation (not needed in repo)
+data/logic_execution_results.json
+data/logic_results.json
+
+# Logic temp files
+logic/temp/*.js
 
 # OS files
 .DS_Store
