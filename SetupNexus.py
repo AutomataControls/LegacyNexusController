@@ -1070,7 +1070,7 @@ TUNNEL_DOMAIN={self.tunnel_domain}
 BMS_ENABLED={'true' if equipment else 'false'}
 BMS_SERVER_URL=http://143.198.162.31:8205/api/v3/query_sql
 BMS_LOCATION_ID=9
-BMS_EQUIPMENT_ID={equipment}
+BMS_EQUIPMENT_ID={equipment if equipment else '5'}
 
 # Weather Configuration
 WEATHER_ENABLED=true
@@ -1089,19 +1089,47 @@ ENABLE_HTTPS=false
 CORS_ORIGIN=*
 RATE_LIMIT=100
 
+# Default Admin Credentials (Change on first login!)
+DEFAULT_ADMIN_USERNAME=DevOps
+DEFAULT_ADMIN_PASSWORD=Invertedskynet2$
+
 # Email Configuration (Resend)
-EMAIL_FROM=noreply@automatacontrols.com
-EMAIL_ADMIN=admin@automatacontrols.com
+EMAIL_FROM=DevOps@automatacontrols.com
+EMAIL_ADMIN=DevOps@automatacontrols.com
+DEFAULT_RECIPIENT=DevOps@automatacontrols.com
 """
             
             env_path = f'{portal_dest}/.env'
-            with open(env_path, 'w') as f:
-                f.write(env_content)
-            
-            subprocess.run(['sudo', 'chown', f'{user}:{user}', env_path], check=True)
-            subprocess.run(['sudo', 'chmod', '600', env_path], check=True)
-            
-            self.queue.put(('console', f'✓ Configuration saved to {env_path}\n\n'))
+            self.queue.put(('console', f'Writing .env file to {env_path}...\n'))
+
+            try:
+                # Write to temp file first
+                temp_env_path = '/tmp/.env.tmp'
+                with open(temp_env_path, 'w') as f:
+                    f.write(env_content)
+
+                # Move to final location with sudo
+                subprocess.run(['sudo', 'cp', temp_env_path, env_path], check=True)
+                subprocess.run(['sudo', 'chown', f'{user}:{user}', env_path], check=True)
+                subprocess.run(['sudo', 'chmod', '600', env_path], check=True)
+
+                # Verify file was created
+                if os.path.exists(env_path):
+                    file_size = os.path.getsize(env_path)
+                    self.queue.put(('console', f'✓ Configuration saved to {env_path} ({file_size} bytes)\n'))
+                else:
+                    self.queue.put(('console', f'❌ ERROR: .env file not created at {env_path}\n'))
+                    raise Exception('.env file creation failed')
+
+                # Clean up temp file
+                subprocess.run(['rm', '-f', temp_env_path], check=False)
+
+            except Exception as e:
+                self.queue.put(('console', f'❌ ERROR creating .env file: {str(e)}\n'))
+                self.queue.put(('console', 'Installation cannot continue without .env file!\n'))
+                raise
+
+            self.queue.put(('console', '✓ .env file created successfully\n\n'))
 
             # STEP 7: Initialize SQLite Databases
             self.queue.put(('console', '═══════════════════════════════════════\n'))
