@@ -1148,6 +1148,7 @@ EMAIL_ADMIN=admin@automatacontrols.com
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                     cpu_temp REAL,
                     cpu_usage REAL,
+                    mem_used INTEGER,
                     mem_percent INTEGER,
                     disk_usage INTEGER,
                     uptime INTEGER,
@@ -1183,6 +1184,45 @@ EMAIL_ADMIN=admin@automatacontrols.com
                     enabled BOOLEAN DEFAULT 1,
                     alarmType TEXT DEFAULT 'warning',
                     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+
+            # Add board_configs table (app expects this name, not board_configurations)
+            metrics_cursor.execute('''
+                CREATE TABLE IF NOT EXISTS board_configs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    board_id TEXT UNIQUE NOT NULL,
+                    board_type TEXT,
+                    firmware_version TEXT,
+                    last_seen DATETIME,
+                    config_data TEXT,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+
+            # Add system_config table
+            metrics_cursor.execute('''
+                CREATE TABLE IF NOT EXISTS system_config (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    key TEXT UNIQUE NOT NULL,
+                    value TEXT,
+                    category TEXT,
+                    description TEXT,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+
+            # Add NexusControllerMetrics table
+            metrics_cursor.execute('''
+                CREATE TABLE IF NOT EXISTS NexusControllerMetrics (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    controller_id TEXT,
+                    metric_type TEXT,
+                    metric_value REAL,
+                    unit TEXT,
+                    status TEXT
                 )
             ''')
 

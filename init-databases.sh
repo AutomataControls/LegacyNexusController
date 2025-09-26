@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS system_metrics (
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     cpu_temp REAL,
     cpu_usage REAL,
+    mem_used INTEGER,
     mem_percent INTEGER,
     disk_usage INTEGER,
     uptime INTEGER,
@@ -88,6 +89,36 @@ CREATE TABLE IF NOT EXISTS alarm_thresholds (
     enabled BOOLEAN DEFAULT 1,
     alarmType TEXT DEFAULT 'warning',
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS board_configs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    board_id TEXT UNIQUE NOT NULL,
+    board_type TEXT,
+    firmware_version TEXT,
+    last_seen DATETIME,
+    config_data TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS system_config (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    key TEXT UNIQUE NOT NULL,
+    value TEXT,
+    category TEXT,
+    description TEXT,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS NexusControllerMetrics (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    controller_id TEXT,
+    metric_type TEXT,
+    metric_value REAL,
+    unit TEXT,
+    status TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_metrics_timestamp ON system_metrics(timestamp);
