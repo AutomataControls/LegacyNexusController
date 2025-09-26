@@ -134,11 +134,19 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     user_id INTEGER,
     username TEXT,
-    action TEXT NOT NULL,
-    resource TEXT,
+    action_type TEXT NOT NULL,
+    action_category TEXT,
+    description TEXT,
     details TEXT,
     ip_address TEXT,
-    status TEXT DEFAULT 'success'
+    user_agent TEXT,
+    session_id TEXT,
+    page_url TEXT,
+    component TEXT,
+    old_value TEXT,
+    new_value TEXT,
+    success BOOLEAN DEFAULT 1,
+    error_message TEXT
 );
 
 CREATE TABLE IF NOT EXISTS system_events (
@@ -152,7 +160,7 @@ CREATE TABLE IF NOT EXISTS system_events (
 );
 
 CREATE INDEX IF NOT EXISTS idx_audit_timestamp ON audit_logs(timestamp);
-CREATE INDEX IF NOT EXISTS idx_audit_user ON audit_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_action ON audit_logs(action_type);
 CREATE INDEX IF NOT EXISTS idx_events_timestamp ON system_events(timestamp);
 CREATE INDEX IF NOT EXISTS idx_events_type ON system_events(event_type);
 "
@@ -160,44 +168,88 @@ create_database "data/audit.db" "audit database" "$AUDIT_SQL"
 
 # 4. Create alarms.db
 ALARMS_SQL="
+CREATE TABLE IF NOT EXISTS active_alarms (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    alarm_id TEXT UNIQUE NOT NULL,
+    alarm_name TEXT NOT NULL,
+    alarm_type TEXT,
+    severity TEXT,
+    parameter TEXT,
+    current_value REAL,
+    threshold_value REAL,
+    triggered_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    acknowledged BOOLEAN DEFAULT 0,
+    acknowledged_by TEXT,
+    acknowledged_at DATETIME,
+    notes TEXT
+);
+
 CREATE TABLE IF NOT EXISTS alarm_configs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT UNIQUE NOT NULL,
-    type TEXT NOT NULL,
+    config_name TEXT UNIQUE NOT NULL,
+    parameter TEXT NOT NULL,
+    alarm_type TEXT,
+    min_threshold REAL,
+    max_threshold REAL,
+    severity TEXT,
     enabled BOOLEAN DEFAULT 1,
-    threshold_low REAL,
-    threshold_high REAL,
     delay_seconds INTEGER DEFAULT 0,
-    email_enabled BOOLEAN DEFAULT 0,
-    sms_enabled BOOLEAN DEFAULT 0,
+    email_notification BOOLEAN DEFAULT 0,
+    sms_notification BOOLEAN DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    updated_at DATETIME
 );
 
 CREATE TABLE IF NOT EXISTS alarm_history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    alarm_id INTEGER NOT NULL,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    alarm_id TEXT NOT NULL,
+    alarm_name TEXT NOT NULL,
+    alarm_type TEXT,
+    severity TEXT,
+    parameter TEXT,
     value REAL,
-    status TEXT NOT NULL,
-    acknowledged BOOLEAN DEFAULT 0,
+    threshold_value REAL,
+    triggered_at DATETIME,
+    cleared_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    duration_seconds INTEGER,
+    acknowledged BOOLEAN,
     acknowledged_by TEXT,
-    acknowledged_at DATETIME,
-    notes TEXT,
-    FOREIGN KEY (alarm_id) REFERENCES alarm_configs(id)
+    notes TEXT
 );
 
 CREATE TABLE IF NOT EXISTS alarm_recipients (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL,
     name TEXT NOT NULL,
-    email TEXT,
-    phone TEXT,
-    active BOOLEAN DEFAULT 1,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    active BOOLEAN DEFAULT 1
 );
 
-CREATE INDEX IF NOT EXISTS idx_alarm_history_timestamp ON alarm_history(timestamp);
-CREATE INDEX IF NOT EXISTS idx_alarm_history_alarm ON alarm_history(alarm_id);
+CREATE TABLE IF NOT EXISTS alarms (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    type TEXT NOT NULL,
+    description TEXT,
+    value REAL,
+    threshold REAL,
+    severity TEXT,
+    acknowledged BOOLEAN DEFAULT 0,
+    acknowledged_by TEXT,
+    acknowledged_at DATETIME
+);
+
+CREATE TABLE IF NOT EXISTS alarm_settings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    monitoring_enabled BOOLEAN DEFAULT 1,
+    email_notifications BOOLEAN DEFAULT 0,
+    high_temp_threshold REAL DEFAULT 85,
+    low_temp_threshold REAL DEFAULT 65,
+    high_amp_threshold REAL DEFAULT 30,
+    low_amp_threshold REAL DEFAULT 5
+);
+
+CREATE INDEX IF NOT EXISTS idx_active_alarms_id ON active_alarms(alarm_id);
+CREATE INDEX IF NOT EXISTS idx_alarm_history_timestamp ON alarm_history(triggered_at);
+CREATE INDEX IF NOT EXISTS idx_alarm_configs_param ON alarm_configs(parameter);
 "
 create_database "data/alarms.db" "alarms database" "$ALARMS_SQL"
 
