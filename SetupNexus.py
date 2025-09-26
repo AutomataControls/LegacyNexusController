@@ -1202,10 +1202,11 @@ EMAIL_ADMIN=admin@automatacontrols.com
                 self.queue.put(('console', f'⚠️ Index creation warning: {str(e)}\n'))
 
             # Insert default DevOps user with hashed password
+            # Password: Invertedskynet2$
             users_cursor.execute('''
                 INSERT OR IGNORE INTO users (username, email, password_hash, role)
                 VALUES (?, ?, ?, ?)
-            ''', ('DevOps', 'devops@automatacontrols.com', '$2a$10$xH3.vEaHIJQZPKT3Ck.3MuH/KdV9XCZX8eXm16X9.KYZFGp6gC7.K', 'admin'))
+            ''', ('DevOps', 'devops@automatacontrols.com', '$2a$10$pbyoaRLjrnkxEWZ6K6WpVOwR/PYdUGL3wv38MjyAjB10HmVUGr6mG', 'admin'))
 
             users_db.commit()
             users_db.close()

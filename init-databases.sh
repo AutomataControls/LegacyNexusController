@@ -294,10 +294,10 @@ USER_COUNT=$(sqlite3 data/users.db "SELECT COUNT(*) FROM users WHERE username='D
 if [ "$USER_COUNT" = "0" ] || [ -z "$USER_COUNT" ]; then
     echo -e "${YELLOW}[*]${NC} Creating default admin user..."
     # Default password: Invertedskynet2$
-    # Hash: $2a$10$xH3.vEaHIJQZPKT3Ck.3MuH/KdV9XCZX8eXm16X9.KYZFGp6gC7.K
+    # Hash: $2a$10$pbyoaRLjrnkxEWZ6K6WpVOwR/PYdUGL3wv38MjyAjB10HmVUGr6mG
     sqlite3 data/users.db "
         INSERT INTO users (username, email, password_hash, role)
-        VALUES ('DevOps', 'devops@automatacontrols.com', '\$2a\$10\$xH3.vEaHIJQZPKT3Ck.3MuH/KdV9XCZX8eXm16X9.KYZFGp6gC7.K', 'admin');
+        VALUES ('DevOps', 'devops@automatacontrols.com', '\$2a\$10\$pbyoaRLjrnkxEWZ6K6WpVOwR/PYdUGL3wv38MjyAjB10HmVUGr6mG', 'admin');
     " 2>/dev/null
 
     if [ $? -eq 0 ]; then
