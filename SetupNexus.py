@@ -764,13 +764,22 @@ Version 2.1.0 - Last Updated: November 2024"""
             # Stop and delete PM2 processes properly
             pm2_check = subprocess.run(['which', 'pm2'], capture_output=True)
             if pm2_check.returncode == 0:
-                # First try to stop and delete nexus-portal specifically
-                self.queue.put(('console', 'Stopping PM2 nexus-portal...\n'))
-                subprocess.run(['pm2', 'stop', 'nexus-portal'], capture_output=True)
-                subprocess.run(['pm2', 'delete', 'nexus-portal'], capture_output=True)
+                # Stop and delete all PM2 apps
+                self.queue.put(('console', 'Stopping all PM2 services...\n'))
+                pm2_apps = [
+                    'nexus-portal',
+                    'local-controller',
+                    'bms-reporter',
+                    'logic-executor',
+                    'processing-reporter',
+                    'vibration-monitor'
+                ]
+                for app in pm2_apps:
+                    subprocess.run(['pm2', 'stop', app], capture_output=True)
+                    subprocess.run(['pm2', 'delete', app], capture_output=True)
                 # Then kill all PM2 processes to ensure clean state
                 subprocess.run(['pm2', 'kill'], capture_output=True)
-                self.queue.put(('console', '✓ PM2 processes stopped\n'))
+                self.queue.put(('console', '✓ All PM2 services stopped\n'))
             else:
                 # Fallback: kill all node processes if PM2 not found
                 subprocess.run(['sudo', 'killall', 'node'], capture_output=True)
@@ -2094,26 +2103,144 @@ ingress:
             else:
                 self.queue.put(('console', '⚠️ PM2 may already be installed\n'))
             
-            # Create PM2 ecosystem config
-            ecosystem_config = f"""module.exports = {{
+            # Create PM2 ecosystem config with ALL services
+            ecosystem_config = f"""require('dotenv').config();
+
+module.exports = {{
   apps: [
     {{
       name: 'nexus-portal',
       script: './server.js',
       cwd: '{portal_dest}',
       instances: 1,
+      exec_mode: 'fork',
       autorestart: true,
       watch: false,
       max_memory_restart: '500M',
       env: {{
+        ...process.env,  // Include ALL environment variables from .env
         NODE_ENV: 'production',
-        PORT: {port},
-        HOST: '0.0.0.0'
+        PORT: process.env.PORT || {port},
+        HOST: process.env.HOST || '0.0.0.0',
+        HOME: '/home/{user}',
+        PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
       }},
       error_file: './logs/pm2-error.log',
       out_file: './logs/pm2-out.log',
       log_file: './logs/pm2-combined.log',
-      time: true
+      time: true,
+      merge_logs: true,
+      log_date_format: 'YYYY-MM-DD HH:mm:ss'
+    }},
+    {{
+      name: 'local-controller',
+      script: './src/services/localControllerService.js',
+      cwd: '{portal_dest}',
+      instances: 1,
+      exec_mode: 'fork',
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '300M',
+      env: {{
+        ...process.env,  // Include ALL environment variables from .env
+        NODE_ENV: 'production',
+        HOME: '/home/{user}',
+        PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+      }},
+      error_file: './logs/controller-error.log',
+      out_file: './logs/controller-out.log',
+      log_file: './logs/controller-combined.log',
+      time: true,
+      merge_logs: true,
+      log_date_format: 'YYYY-MM-DD HH:mm:ss'
+    }},
+    {{
+      name: 'bms-reporter',
+      script: './src/services/bmsReporter.js',
+      cwd: '{portal_dest}',
+      instances: 1,
+      exec_mode: 'fork',
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '200M',
+      env: {{
+        ...process.env,
+        NODE_ENV: 'production',
+        HOME: '/home/{user}',
+        PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+      }},
+      error_file: './logs/bms-error.log',
+      out_file: './logs/bms-out.log',
+      log_file: './logs/bms-combined.log',
+      time: true,
+      merge_logs: true,
+      log_date_format: 'YYYY-MM-DD HH:mm:ss'
+    }},
+    {{
+      name: 'logic-executor',
+      script: './src/services/logicExecutorService.js',
+      cwd: '{portal_dest}',
+      instances: 1,
+      exec_mode: 'fork',
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '300M',
+      env: {{
+        ...process.env,
+        NODE_ENV: 'production',
+        HOME: '/home/{user}',
+        PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+      }},
+      error_file: './logs/logic-error.log',
+      out_file: './logs/logic-out.log',
+      log_file: './logs/logic-combined.log',
+      time: true,
+      merge_logs: true,
+      log_date_format: 'YYYY-MM-DD HH:mm:ss'
+    }},
+    {{
+      name: 'processing-reporter',
+      script: './src/services/processingReporter.js',
+      cwd: '{portal_dest}',
+      instances: 1,
+      exec_mode: 'fork',
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '200M',
+      env: {{
+        ...process.env,
+        NODE_ENV: 'production',
+        HOME: '/home/{user}',
+        PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+      }},
+      error_file: './logs/processing-error.log',
+      out_file: './logs/processing-out.log',
+      log_file: './logs/processing-combined.log',
+      time: true,
+      merge_logs: true,
+      log_date_format: 'YYYY-MM-DD HH:mm:ss'
+    }},
+    {{
+      name: 'vibration-monitor',
+      script: './src/services/vibrationMonitorService.js',
+      cwd: '{portal_dest}',
+      instances: 1,
+      exec_mode: 'fork',
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '200M',
+      env: {{
+        ...process.env,
+        NODE_ENV: 'production',
+        HOME: '/home/{user}',
+        PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+      }},
+      error_file: './logs/vibration-error.log',
+      out_file: './logs/vibration-out.log',
+      log_file: './logs/vibration-combined.log',
+      time: true,
+      merge_logs: true,
+      log_date_format: 'YYYY-MM-DD HH:mm:ss'
     }}
   ]
 }};"""
