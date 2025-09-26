@@ -760,11 +760,19 @@ Version 2.1.0 - Last Updated: November 2024"""
             self.queue.put(('console', 'Stopping services...\n'))
             subprocess.run(['sudo', 'systemctl', 'stop', 'cloudflared'], capture_output=True)
             subprocess.run(['sudo', 'systemctl', 'disable', 'cloudflared'], capture_output=True)
-            # Try to kill PM2 if it exists, otherwise just kill node processes
+
+            # Stop and delete PM2 processes properly
             pm2_check = subprocess.run(['which', 'pm2'], capture_output=True)
             if pm2_check.returncode == 0:
+                # First try to stop and delete nexus-portal specifically
+                self.queue.put(('console', 'Stopping PM2 nexus-portal...\n'))
+                subprocess.run(['pm2', 'stop', 'nexus-portal'], capture_output=True)
+                subprocess.run(['pm2', 'delete', 'nexus-portal'], capture_output=True)
+                # Then kill all PM2 processes to ensure clean state
                 subprocess.run(['pm2', 'kill'], capture_output=True)
+                self.queue.put(('console', '✓ PM2 processes stopped\n'))
             else:
+                # Fallback: kill all node processes if PM2 not found
                 subprocess.run(['sudo', 'killall', 'node'], capture_output=True)
             
             # Remove old files and directories
