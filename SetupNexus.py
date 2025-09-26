@@ -516,24 +516,21 @@ class TunnelInstallerGUI:
         text_frame = tk.Frame(modal, bg=COLORS['bg_primary'])
         text_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
 
-        # Create text widget with scrollbar
-        text_widget = tk.Text(
+        # Use scrolledtext which combines text widget and scrollbar
+        license_text = scrolledtext.ScrolledText(
             text_frame,
             font=('Courier', 10),
             bg='white',
-            fg=COLORS['text_primary'],
+            fg='black',  # Explicitly set to black
             wrap=tk.WORD,
-            bd=1,
-            relief=tk.SUNKEN
+            bd=2,
+            relief=tk.SUNKEN,
+            padx=10,
+            pady=10,
+            height=20,
+            width=80
         )
-
-        # Add scrollbar
-        scrollbar = tk.Scrollbar(text_frame, command=text_widget.yview)
-        text_widget.configure(yscrollcommand=scrollbar.set)
-
-        # Pack widgets
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        text_widget.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        license_text.pack(fill=tk.BOTH, expand=True)
 
         # Insert the full license agreement
         full_license = """AUTOMATACONTROLS™ COMMERCIAL SOFTWARE LICENSE AGREEMENT
@@ -605,8 +602,15 @@ AutomataControls™ and AutomataNexusBms™ are trademarks of AutomataNexus, LLC
 
 Version 2.1.0 - Last Updated: November 2024"""
 
-        text_widget.insert('1.0', full_license)
-        text_widget.config(state='disabled')  # Make read-only
+        # Insert license text
+        license_text.delete('1.0', tk.END)  # Clear any existing text
+        license_text.insert('1.0', full_license)
+
+        # Scroll to top
+        license_text.see('1.0')
+
+        # Make read-only after inserting
+        license_text.config(state='disabled')
 
         # Button frame
         button_frame = tk.Frame(modal, bg=COLORS['bg_primary'])
@@ -721,10 +725,25 @@ Version 2.1.0 - Last Updated: November 2024"""
             subprocess.run(['sudo', 'rm', '-rf', f'/home/{user}/.cloudflared'], capture_output=True)
             subprocess.run(['sudo', 'rm', '-f', f'/home/{user}/.env'], capture_output=True)
             subprocess.run(['sudo', 'rm', '-f', '/etc/systemd/system/cloudflared.service'], capture_output=True)
-            
-            # Remove old portal directory
+
+            # Check if we're running from the portal directory
             portal_dest = f'/home/{user}/remote-access-portal'
-            if os.path.exists(portal_dest):
+            installer_dir = os.path.dirname(os.path.abspath(__file__))
+
+            # Only clean portal contents if we're running from inside it, don't remove the whole dir
+            if installer_dir == portal_dest or installer_dir.endswith('/remote-access-portal'):
+                self.queue.put(('console', 'Cleaning portal directory contents (keeping installer)...\n'))
+                # Clean only build artifacts and node_modules, not the whole directory
+                subprocess.run(['sudo', 'rm', '-rf', f'{portal_dest}/node_modules'], capture_output=True)
+                subprocess.run(['sudo', 'rm', '-rf', f'{portal_dest}/.next'], capture_output=True)
+                subprocess.run(['sudo', 'rm', '-rf', f'{portal_dest}/build'], capture_output=True)
+                subprocess.run(['sudo', 'rm', '-rf', f'{portal_dest}/dist'], capture_output=True)
+                subprocess.run(['sudo', 'rm', '-f', f'{portal_dest}/package-lock.json'], capture_output=True)
+                subprocess.run(['sudo', 'rm', '-rf', f'{portal_dest}/data'], capture_output=True)
+                subprocess.run(['sudo', 'rm', '-f', f'{portal_dest}/.env'], capture_output=True)
+                self.queue.put(('console', '✓ Portal directory cleaned\n'))
+            elif os.path.exists(portal_dest):
+                # Only remove if we're NOT running from inside it
                 self.queue.put(('console', 'Removing old portal directory...\n'))
                 subprocess.run(['sudo', 'rm', '-rf', portal_dest], capture_output=True)
                 self.queue.put(('console', '✓ Old portal directory removed\n'))
@@ -804,7 +823,21 @@ Version 2.1.0 - Last Updated: November 2024"""
                 self.queue.put(('console', f'Copying portal files from {portal_src} to {portal_dest}...\n'))
                 subprocess.run(['sudo', 'cp', '-r', portal_src, portal_dest], check=True)
 
-            subprocess.run(['sudo', 'chown', '-R', f'{user}:{user}', portal_dest], check=True)
+            # Set ownership with full permissions for Automata user
+            self.queue.put(('console', f'Setting full ownership to {user}...\n'))
+            # Ensure directory exists before chown
+            if os.path.exists(portal_dest):
+                # Set ownership recursively with sudo
+                subprocess.run(['sudo', 'chown', '-R', f'{user}:{user}', portal_dest], check=False)
+                # Also set directory permissions to ensure full access
+                subprocess.run(['sudo', 'chmod', '-R', '755', portal_dest], check=False)
+                # Make sure user can write to all files
+                subprocess.run(['sudo', 'find', portal_dest, '-type', 'f', '-exec', 'chmod', '644', '{}', ';'], check=False)
+                # Make scripts executable
+                subprocess.run(['sudo', 'find', portal_dest, '-name', '*.sh', '-exec', 'chmod', '755', '{}', ';'], check=False)
+                self.queue.put(('console', f'✓ Full ownership granted to {user}\n'))
+            else:
+                self.queue.put(('console', f'⚠️ Portal directory not found at {portal_dest}\n'))
             
             # Change to portal directory
             os.chdir(portal_dest)
@@ -1027,7 +1060,7 @@ EMAIL_ADMIN=admin@automatacontrols.com
             self.queue.put(('console', '═══════════════════════════════════════\n'))
             self.queue.put(('console', 'STEP 7: INITIALIZING SQLITE DATABASES\n'))
             self.queue.put(('console', '═══════════════════════════════════\n\n'))
-            self.queue.put(('progress', (32, 'Creating databases...')))
+            self.queue.put(('progress', (32, 'Preparing to create 5 databases...')))
 
             # Create data directory if it doesn't exist
             data_dir = f'{portal_dest}/data'
@@ -1038,8 +1071,8 @@ EMAIL_ADMIN=admin@automatacontrols.com
             import sqlite3
 
             # 1. Create metrics.db
-            self.queue.put(('console', 'Creating metrics database...\n'))
-            self.queue.put(('progress', (33, 'Initializing metrics database...')))
+            self.queue.put(('console', '[1/5] Creating metrics database...\n'))
+            self.queue.put(('progress', (34, 'Database 1/5: Creating metrics.db...')))
             metrics_db = sqlite3.connect(f'{data_dir}/metrics.db')
             metrics_cursor = metrics_db.cursor()
 
@@ -1093,10 +1126,11 @@ EMAIL_ADMIN=admin@automatacontrols.com
             metrics_db.commit()
             metrics_db.close()
             self.queue.put(('console', '✓ Metrics database created\n'))
+            self.queue.put(('progress', (36, 'Database 1/5 complete')))
 
             # 2. Create users.db
-            self.queue.put(('console', 'Creating users database...\n'))
-            self.queue.put(('progress', (34, 'Initializing users database...')))
+            self.queue.put(('console', '[2/5] Creating users database...\n'))
+            self.queue.put(('progress', (38, 'Database 2/5: Creating users.db...')))
             users_db = sqlite3.connect(f'{data_dir}/users.db')
             users_cursor = users_db.cursor()
 
@@ -1149,10 +1183,11 @@ EMAIL_ADMIN=admin@automatacontrols.com
             users_db.commit()
             users_db.close()
             self.queue.put(('console', '✓ Users database created with default admin user\n'))
+            self.queue.put(('progress', (40, 'Database 2/5 complete')))
 
             # 3. Create audit.db
-            self.queue.put(('console', 'Creating audit database...\n'))
-            self.queue.put(('progress', (35, 'Initializing audit database...')))
+            self.queue.put(('console', '[3/5] Creating audit database...\n'))
+            self.queue.put(('progress', (42, 'Database 3/5: Creating audit.db...')))
             audit_db = sqlite3.connect(f'{data_dir}/audit.db')
             audit_cursor = audit_db.cursor()
 
@@ -1201,10 +1236,11 @@ EMAIL_ADMIN=admin@automatacontrols.com
             audit_db.commit()
             audit_db.close()
             self.queue.put(('console', '✓ Audit database created\n'))
+            self.queue.put(('progress', (44, 'Database 3/5 complete')))
 
             # 4. Create alarms.db
-            self.queue.put(('console', 'Creating alarms database...\n'))
-            self.queue.put(('progress', (36, 'Initializing alarms database...')))
+            self.queue.put(('console', '[4/5] Creating alarms database...\n'))
+            self.queue.put(('progress', (46, 'Database 4/5: Creating alarms.db...')))
             alarms_db = sqlite3.connect(f'{data_dir}/alarms.db')
             alarms_cursor = alarms_db.cursor()
 
@@ -1269,10 +1305,11 @@ EMAIL_ADMIN=admin@automatacontrols.com
             alarms_db.commit()
             alarms_db.close()
             self.queue.put(('console', '✓ Alarms database created\n'))
+            self.queue.put(('progress', (48, 'Database 4/5 complete')))
 
             # 5. Create weather.db
-            self.queue.put(('console', 'Creating weather database...\n'))
-            self.queue.put(('progress', (37, 'Initializing weather database...')))
+            self.queue.put(('console', '[5/5] Creating weather database...\n'))
+            self.queue.put(('progress', (50, 'Database 5/5: Creating weather.db...')))
             weather_db = sqlite3.connect(f'{data_dir}/weather.db')
             weather_cursor = weather_db.cursor()
 
@@ -1324,12 +1361,15 @@ EMAIL_ADMIN=admin@automatacontrols.com
             weather_db.commit()
             weather_db.close()
             self.queue.put(('console', '✓ Weather database created\n'))
+            self.queue.put(('progress', (52, 'Database 5/5 complete')))
 
             # Set permissions on all database files
+            self.queue.put(('console', 'Setting database permissions...\n'))
             subprocess.run(['sudo', 'chown', '-R', f'{user}:{user}', data_dir], check=True)
             subprocess.run(['sudo', 'chmod', '644', f'{data_dir}/*.db'], shell=True, check=False)
 
             self.queue.put(('console', '✓ All 5 databases initialized successfully\n'))
+            self.queue.put(('progress', (55, 'Databases ready')))
             self.queue.put(('console', '  Default admin user: DevOps / Invertedskynet2$\n\n'))
 
             # STEP 8: Create Node-RED flow configuration
