@@ -104,13 +104,23 @@ class TunnelInstallerGUI:
         # Get screen dimensions
         screen_width = root.winfo_screenwidth()
         screen_height = root.winfo_screenheight()
-        
-        # Open fullscreen
-        self.root.attributes('-fullscreen', True)
-        
-        # Allow escape key to exit fullscreen
-        self.root.bind("<Escape>", lambda e: self.root.attributes('-fullscreen', False))
+
+        # Set window size to 90% of screen or max 900x700 (whichever is smaller)
+        window_width = min(900, int(screen_width * 0.9))
+        window_height = min(700, int(screen_height * 0.85))
+
+        # Center the window
+        x = (screen_width - window_width) // 2
+        y = (screen_height - window_height) // 2
+
+        self.root.geometry(f'{window_width}x{window_height}+{x}+{y}')
         self.root.configure(bg=COLORS['bg_primary'])
+
+        # Make window resizable
+        self.root.resizable(True, True)
+
+        # Set minimum size to ensure buttons are visible
+        self.root.minsize(800, 600)
         
         # Queue for thread communication
         self.queue = queue.Queue()
@@ -174,10 +184,40 @@ class TunnelInstallerGUI:
         )
         subtitle_label.pack()  # Centered
         
-        # Content area
-        content_frame = tk.Frame(main_container, bg=COLORS['bg_primary'])
-        content_frame.pack(fill=tk.BOTH, expand=True, padx=30, pady=20)
-        
+        # Create a canvas with scrollbar for content
+        canvas_frame = tk.Frame(main_container, bg=COLORS['bg_primary'])
+        canvas_frame.pack(fill=tk.BOTH, expand=True, padx=30, pady=20)
+
+        # Create canvas
+        canvas = tk.Canvas(canvas_frame, bg=COLORS['bg_primary'], highlightthickness=0)
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        # Add scrollbar
+        scrollbar = tk.Scrollbar(canvas_frame, orient=tk.VERTICAL, command=canvas.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        # Create scrollable frame
+        content_frame = tk.Frame(canvas, bg=COLORS['bg_primary'])
+        canvas_window = canvas.create_window(0, 0, anchor=tk.NW, window=content_frame)
+
+        # Configure canvas scrolling
+        def configure_scroll(event=None):
+            canvas.configure(scrollregion=canvas.bbox("all"))
+            # Make the frame expand to fill the canvas width
+            canvas_width = canvas.winfo_width()
+            if canvas_width > 1:
+                canvas.itemconfig(canvas_window, width=canvas_width)
+
+        content_frame.bind('<Configure>', configure_scroll)
+        canvas.bind('<Configure>', lambda e: canvas.itemconfig(canvas_window, width=e.width))
+
+        # Enable mousewheel scrolling
+        def on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+        canvas.bind_all("<MouseWheel>", on_mousewheel)
+
         # Left column - Configuration inputs
         left_frame = tk.Frame(content_frame, bg=COLORS['bg_card'])
         left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 15))
@@ -283,62 +323,7 @@ class TunnelInstallerGUI:
         )
         claude_check.pack(anchor=tk.W)
         
-        # Buttons frame
-        button_frame = tk.Frame(inputs_frame, bg=COLORS['bg_card'])
-        button_frame.pack(fill=tk.X, pady=(30, 0))
-        
-        # Exit button on LEFT
-        exit_btn = tk.Button(
-            button_frame,
-            text="Exit",
-            font=('Inter', 11),
-            bg=COLORS['bg_tertiary'],
-            fg=COLORS['text_primary'],
-            activebackground=COLORS['bg_secondary'],
-            activeforeground=COLORS['text_primary'],
-            command=self.root.quit,
-            padx=20,
-            pady=8,
-            relief=tk.RAISED,
-            bd=2
-        )
-        exit_btn.pack(side=tk.LEFT)
-        
-        # Install button on RIGHT (disabled until license accepted)
-        self.install_btn = tk.Button(
-            button_frame,
-            text="Install",
-            font=('Inter', 11, 'bold'),
-            bg=COLORS['bg_tertiary'],
-            fg=COLORS['text_primary'],
-            activebackground=COLORS['accent_primary'],
-            activeforeground='white',
-            command=self.start_installation,
-            state=tk.DISABLED,
-            padx=25,
-            pady=8,
-            relief=tk.RAISED,
-            bd=2
-        )
-        self.install_btn.pack(side=tk.RIGHT, padx=(10, 0))
-        
-        # Cancel button next to Install
-        self.cancel_btn = tk.Button(
-            button_frame,
-            text="Cancel",
-            font=('Inter', 11),
-            bg=COLORS['bg_tertiary'],
-            fg=COLORS['text_primary'],
-            activebackground=COLORS['bg_secondary'],
-            activeforeground=COLORS['text_primary'],
-            command=self.cancel_installation,
-            state=tk.DISABLED,
-            padx=20,
-            pady=8,
-            relief=tk.RAISED,
-            bd=2
-        )
-        self.cancel_btn.pack(side=tk.RIGHT)
+        # Note: Buttons will be added at the bottom of the window, not here
         
         # Right column - Console output
         right_frame = tk.Frame(content_frame, bg=COLORS['bg_card'])
@@ -411,6 +396,68 @@ class TunnelInstallerGUI:
         )
         self.console.pack(fill=tk.BOTH, expand=True)
         
+        # Button bar at bottom (above footer)
+        button_bar = tk.Frame(main_container, bg=COLORS['bg_tertiary'], height=70)
+        button_bar.pack(fill=tk.X, side=tk.BOTTOM)
+        button_bar.pack_propagate(False)
+
+        # Button container with padding
+        button_container = tk.Frame(button_bar, bg=COLORS['bg_tertiary'])
+        button_container.pack(expand=True)
+
+        # Exit button on LEFT
+        exit_btn = tk.Button(
+            button_container,
+            text="Exit",
+            font=('Inter', 11),
+            bg='white',
+            fg=COLORS['text_primary'],
+            activebackground=COLORS['bg_secondary'],
+            activeforeground=COLORS['text_primary'],
+            command=self.root.quit,
+            padx=25,
+            pady=10,
+            relief=tk.RAISED,
+            bd=2
+        )
+        exit_btn.pack(side=tk.LEFT, padx=20, pady=15)
+
+        # Install button on RIGHT (disabled until license accepted)
+        self.install_btn = tk.Button(
+            button_container,
+            text="Install",
+            font=('Inter', 11, 'bold'),
+            bg=COLORS['accent_primary'],
+            fg='white',
+            activebackground=COLORS['accent_secondary'],
+            activeforeground='white',
+            command=self.start_installation,
+            state=tk.DISABLED,
+            padx=30,
+            pady=10,
+            relief=tk.RAISED,
+            bd=2
+        )
+        self.install_btn.pack(side=tk.RIGHT, padx=20, pady=15)
+
+        # Cancel button next to Install
+        self.cancel_btn = tk.Button(
+            button_container,
+            text="Cancel",
+            font=('Inter', 11),
+            bg='white',
+            fg=COLORS['text_primary'],
+            activebackground=COLORS['bg_secondary'],
+            activeforeground=COLORS['text_primary'],
+            command=self.cancel_installation,
+            state=tk.DISABLED,
+            padx=25,
+            pady=10,
+            relief=tk.RAISED,
+            bd=2
+        )
+        self.cancel_btn.pack(side=tk.RIGHT, padx=5, pady=15)
+
         # Footer
         footer_frame = tk.Frame(main_container, bg=COLORS['bg_secondary'], height=50)
         footer_frame.pack(fill=tk.X, side=tk.BOTTOM)
