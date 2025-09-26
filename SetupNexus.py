@@ -805,7 +805,19 @@ Version 2.1.0 - Last Updated: November 2024"""
                 subprocess.run(['sudo', 'rm', '-f', f'{portal_dest}/package-lock.json'], capture_output=True)
                 subprocess.run(['sudo', 'rm', '-rf', f'{portal_dest}/data'], capture_output=True)
                 subprocess.run(['sudo', 'rm', '-f', f'{portal_dest}/.env'], capture_output=True)
-                self.queue.put(('console', '✓ Portal directory cleaned\n'))
+
+                # Clean up equipment logic and configurations
+                self.queue.put(('console', 'Clearing equipment logic and configurations...\n'))
+                # Remove all equipment logic files (but keep the directories)
+                subprocess.run(['sudo', 'find', f'{portal_dest}/logic/equipment', '-name', '*.js', '-delete'], capture_output=True)
+                subprocess.run(['sudo', 'find', f'{portal_dest}/logic/temp', '-name', '*.js', '-delete'], capture_output=True)
+                # Remove configuration JSON files
+                subprocess.run(['sudo', 'rm', '-f', f'{portal_dest}/data/logic_executor_config.json'], capture_output=True)
+                subprocess.run(['sudo', 'rm', '-f', f'{portal_dest}/data/board_configs.json'], capture_output=True)
+                subprocess.run(['sudo', 'rm', '-f', f'{portal_dest}/data/logic_results.json'], capture_output=True)
+                subprocess.run(['sudo', 'rm', '-f', f'{portal_dest}/data/logic_execution_results.json'], capture_output=True)
+
+                self.queue.put(('console', '✓ Portal directory and logic cleaned\n'))
             elif os.path.exists(portal_dest):
                 # Only remove if we're NOT running from inside it
                 self.queue.put(('console', 'Removing old portal directory...\n'))
@@ -2415,15 +2427,32 @@ WantedBy=multi-user.target
             self.queue.put(('console', '═══════════════════════════════════════\n\n'))
             self.queue.put(('progress', (85, 'Starting services...')))
             
-            # Start portal with PM2
-            self.queue.put(('console', 'Starting portal with PM2...\n'))
+            # Start ALL services with PM2
+            self.queue.put(('console', 'Starting all PM2 services...\n'))
             os.chdir(portal_dest)
-            subprocess.run(['sudo', '-u', user, 'pm2', 'delete', 'nexus-portal'], capture_output=True)
-            pm2_start = subprocess.run(['sudo', '-u', user, 'pm2', 'start', 'ecosystem.config.js'], 
+
+            # Delete any existing PM2 apps first
+            pm2_apps = [
+                'nexus-portal',
+                'local-controller',
+                'bms-reporter',
+                'logic-executor',
+                'processing-reporter',
+                'vibration-monitor'
+            ]
+            for app in pm2_apps:
+                subprocess.run(['sudo', '-u', user, 'pm2', 'delete', app], capture_output=True)
+
+            # Start all services from ecosystem config
+            pm2_start = subprocess.run(['sudo', '-u', user, 'pm2', 'start', 'ecosystem.config.js'],
                                      capture_output=True, text=True)
-            
+
             if pm2_start.returncode == 0:
-                self.queue.put(('console', '✓ Portal started with PM2\n'))
+                self.queue.put(('console', '✓ All PM2 services started\n'))
+                # List the started services
+                pm2_list = subprocess.run(['sudo', '-u', user, 'pm2', 'list'],
+                                        capture_output=True, text=True)
+                self.queue.put(('console', f'{pm2_list.stdout}\n'))
             else:
                 self.queue.put(('console', f'⚠️ PM2 start warning: {pm2_start.stderr}\n'))
             
