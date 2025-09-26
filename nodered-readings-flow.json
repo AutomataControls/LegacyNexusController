@@ -1,0 +1,64 @@
+[
+    {
+        "id": "readings_api",
+        "type": "http in",
+        "z": "flow_id",
+        "name": "Readings API",
+        "url": "/api/readings",
+        "method": "get",
+        "x": 110,
+        "y": 100,
+        "wires": [["prepare_readings"]]
+    },
+    {
+        "id": "prepare_readings",
+        "type": "function",
+        "z": "flow_id",
+        "name": "Prepare Readings Data",
+        "func": "const readings = {\n    inputs: {\n        setpoint: global.get('setpoint') || 72.0,\n        space: global.get('space_temp') || 74.5,\n        supply: global.get('supply_temp') || 55.0,\n        amps: global.get('current') || 8.5\n    },\n    outputs: {\n        triacs: {\n            triac1: global.get('triac1_enabled') || false,\n            triac2: global.get('triac2_enabled') || false,\n            triac3: global.get('triac3_enabled') || false,\n            triac4: global.get('triac4_enabled') || false\n        },\n        analog: {\n            ao1: global.get('ao1_percent') || 0,\n            ao2: global.get('ao2_percent') || 0,\n            ao3: global.get('ao3_percent') || 0,\n            ao4: global.get('ao4_percent') || 0\n        }\n    },\n    alarms: global.get('active_alarms') || []\n};\n\nmsg.payload = readings;\nreturn msg;",
+        "outputs": 1,
+        "x": 340,
+        "y": 100,
+        "wires": [["http_response"]]
+    },
+    {
+        "id": "http_response",
+        "type": "http response",
+        "z": "flow_id",
+        "name": "Send Response",
+        "x": 560,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "thresholds_api",
+        "type": "http in",
+        "z": "flow_id",
+        "name": "Thresholds GET",
+        "url": "/api/thresholds",
+        "method": "get",
+        "x": 120,
+        "y": 200,
+        "wires": [["get_thresholds"]]
+    },
+    {
+        "id": "get_thresholds",
+        "type": "function",
+        "z": "flow_id",
+        "name": "Get Thresholds",
+        "func": "const thresholds = global.get('alarm_thresholds') || [];\nmsg.payload = thresholds;\nreturn msg;",
+        "outputs": 1,
+        "x": 340,
+        "y": 200,
+        "wires": [["http_response2"]]
+    },
+    {
+        "id": "http_response2",
+        "type": "http response",
+        "z": "flow_id",
+        "name": "Send Response",
+        "x": 560,
+        "y": 200,
+        "wires": []
+    }
+]

@@ -1,0 +1,19 @@
+{
+  "equipmentId": "H2lwkgXBNDsvnuKoDUQe",
+  "primaryEquipmentId": "QNiHngLxledu7BHM9wLi",
+  "allEquipmentIds": [
+    "QNiHngLxledu7BHM9wLi",
+    "H2lwkgXBNDsvnuKoDUQe",
+    "QYTVSM7IMylxDc2Y0pxr"
+  ],
+  "enabled": false,
+  "autoRunEnabled": false,
+  "pollingInterval": 7,
+  "uploadedAt": "2025-09-13T17:05:41.731Z",
+  "uploadedBy": "api-user",
+  "temperatureSetpoint": 72,
+  "occupancySchedule": {
+    "start": "05:30",
+    "end": "20:30"
+  }
+}

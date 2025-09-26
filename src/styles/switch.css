@@ -1,0 +1,38 @@
+/* Sleek Switch Component Styles */
+.switch-root {
+  width: 36px;
+  height: 18px;
+  background-color: #d1d5db;
+  border-radius: 9999px;
+  position: relative;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border: none;
+  padding: 0;
+}
+
+.switch-root[data-state='checked'] {
+  background-color: #14b8a6;
+}
+
+.switch-root[data-disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.switch-thumb {
+  display: block;
+  width: 14px;
+  height: 14px;
+  background-color: white;
+  border-radius: 9999px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease;
+  transform: translateX(2px);
+  will-change: transform;
+}
+
+.switch-thumb[data-state='checked'] {
+  transform: translateX(20px);
+}

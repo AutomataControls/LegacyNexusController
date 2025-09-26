@@ -1,0 +1,39 @@
+/*
+ * Automata Neural Nexus™ Remote Portal
+ * Copyright © 2024 Automata Controls, Inc. All rights reserved.
+ * 
+ * PROPRIETARY AND CONFIDENTIAL
+ * This software is proprietary to Automata Controls and constitutes valuable 
+ * trade secrets. This software may not be copied, distributed, modified, 
+ * or disclosed to third parties without prior written authorization from 
+ * Automata Controls. Use of this software is governed by a commercial license
+ * agreement. Unauthorized use is strictly prohibited.
+ */
+
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "build"]
+}

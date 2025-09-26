@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cooling Tower Control Logic - AutomataNexus</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: white;
+            font-size: 12px;
+            color: #333;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 120px;
+            color: rgba(200, 200, 200, 0.03);
+            font-weight: bold;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border: 2px solid #00A8A8;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #00A8A8;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #00A8A8;
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .header h2 {
+            color: #333;
+            margin: 10px 0;
+            font-size: 18px;
+        }
+
+        .header p {
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .section {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-left: 4px solid #00A8A8;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .section h3 {
+            color: #00A8A8;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 15px 0;
+        }
+
+        .config-item {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .config-item h4 {
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .config-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .config-list li {
+            padding: 3px 0;
+            font-size: 11px;
+            color: #555;
+        }
+
+        .equipment-ids {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .equipment-ids h4 {
+            color: #00A8A8;
+            margin-top: 0;
+        }
+
+        .signature-section {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .signature {
+            text-align: left;
+        }
+
+        .signature-name {
+            font-family: 'Brush Script MT', cursive;
+            font-size: 22px;
+            color: #2c3e50;
+            margin-bottom: -8px;
+            transform: rotate(-1deg);
+            font-style: italic;
+        }
+
+        .signature-line {
+            border-top: 2px solid #333;
+            width: 200px;
+            margin: 0 0 4px 0;
+        }
+
+        .signature-title {
+            font-size: 12px;
+            line-height: 1.3;
+            color: #333;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="watermark">AUTOMATANEXUS 2025</div>
+
+    <div class="container">
+        <div class="header">
+            <h1>COOLING TOWER CONTROL LOGIC</h1>
+            <h2>Neural Facility Intelligence Processing Infrastructure</h2>
+            <p>AutomataNexus - Current Mechanical License #CM-2024-001</p>
+            <p>Version 1.1.0 | Date: September 11, 2025</p>
+        </div>
+
+        <div class="equipment-ids">
+            <h4>Equipment Identification</h4>
+            <ul class="config-list">
+                <li><strong>Cooling Tower-1:</strong> QNiHngLxledu7BHM9wLi</li>
+                <li><strong>Cooling Tower-2:</strong> H2lwkgXBNDsvnuKoDUQe</li>
+                <li><strong>Cooling Tower-3:</strong> QYTVSM7IMylxDc2Y0pxr</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h3>System Configuration</h3>
+            <div class="config-grid">
+                <div class="config-item">
+                    <h4>Equipment Configuration</h4>
+                    <ul class="config-list">
+                        <li>3 x 20HP VFD Tower Fans (0-10V speed control)</li>
+                        <li>3 x Tower Water Pumps (external pump controls)</li>
+                        <li>6 x Current Sensors (0-10VDC, 2 per VFD, 0-50A range)</li>
+                        <li>3 x Pump Current Sensors (0-10VDC, 0-50A range)</li>
+                        <li>5 x 1K Platinum Temperature Sensors</li>
+                        <li>3 x WTV801-RS485 Vibration Sensors (ISO10816)</li>
+                        <li>3 x CH340 USB-RS485 Adapters</li>
+                        <li>1 x Bypass Valve (0-10V control)</li>
+                        <li>3 x Tower Heaters (relay control)</li>
+                    </ul>
+                </div>
+                <div class="config-item">
+                    <h4>Control Parameters</h4>
+                    <ul class="config-list">
+                        <li><strong>Lead Tower Rotation:</strong> Weekly</li>
+                        <li><strong>Target Supply Temp:</strong> 70.0°F</li>
+                        <li><strong>Temperature Deadband:</strong> 1.0°F</li>
+                        <li><strong>VFD Speed Control:</strong> PID Mode Enabled</li>
+                        <li><strong>Vibration Warning:</strong> 4.5 mm/s</li>
+                        <li><strong>Vibration Critical:</strong> 7.1 mm/s</li>
+                        <li><strong>VFD Current Warning:</strong> 40.0A</li>
+                        <li><strong>VFD Current Critical:</strong> 45.0A</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>VFD Speed Control Configuration</h3>
+            <div class="config-grid">
+                <div class="config-item">
+                    <h4>PID Mode (Default - VFD_SPEED_REF_ENABLE = true)</h4>
+                    <ul class="config-list">
+                        <li><strong>Minimum Speed:</strong> 35Hz (3.5V)</li>
+                        <li><strong>Maximum Speed:</strong> 55Hz (5.5V)</li>
+                        <li>Continuous modulation based on temperature error</li>
+                        <li>Low demand: Limited to 70% of max speed range</li>
+                        <li>High demand: 70-100% of speed range</li>
+                    </ul>
+                </div>
+                <div class="config-item">
+                    <h4>2-Speed Mode (VFD_SPEED_REF_ENABLE = false)</h4>
+                    <ul class="config-list">
+                        <li><strong>Low Speed:</strong> 35-45Hz (4.0V)</li>
+                        <li><strong>High Speed:</strong> 50-55Hz (5.5V)</li>
+                        <li>Traditional discrete speed control</li>
+                        <li>Hysteresis prevents short cycling</li>
+                        <li>Simple staging based on delta-T thresholds</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Staging Thresholds</h3>
+            <div class="config-grid">
+                <div class="config-item">
+                    <h4>Temperature-Based Staging</h4>
+                    <ul class="config-list">
+                        <li><strong>Stage 1:</strong> ΔT > 8.0°F - Start lead tower low speed</li>
+                        <li><strong>Stage 2:</strong> ΔT > 10.0°F - Lead tower high speed</li>
+                        <li><strong>Stage 3:</strong> ΔT > 12.0°F - Add lag tower 1</li>
+                        <li><strong>Stage 4:</strong> ΔT > 15.0°F - Add lag tower 2</li>
+                        <li><strong>Shutdown:</strong> ΔT < 5.0°F - Normal shutdown sequence</li>
+                    </ul>
+                </div>
+                <div class="config-item">
+                    <h4>Safety Bypasses (Configurable)</h4>
+                    <ul class="config-list">
+                        <li>Emergency Stop Bypass: Disabled</li>
+                        <li>Water Level Bypass: Disabled</li>
+                        <li>Vibration Limits Bypass: Disabled</li>
+                        <li>Current Limits Bypass: Disabled</li>
+                        <li>Pump Status Bypass: Disabled</li>
+                        <li>VFD Fault Bypass: Disabled</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Control Function Overview</h3>
+            <p><strong>processCoolingTowerControl(data, uiCommands, stateStorage)</strong></p>
+            <p>The main control function processes incoming sensor data and generates control commands for cooling tower
+                systems with proper staging and safety interlocks.</p>
+
+            <div class="config-grid">
+                <div class="config-item">
+                    <h4>Input Parameters</h4>
+                    <ul class="config-list">
+                        <li><strong>data:</strong> Sensor data from cooling tower systems</li>
+                        <li><strong>uiCommands:</strong> User interface commands and setpoints</li>
+                        <li><strong>stateStorage:</strong> Persistent state storage for timing and cycling</li>
+                    </ul>
+                </div>
+                <div class="config-item">
+                    <h4>Control Outputs</h4>
+                    <ul class="config-list">
+                        <li>VFD Enable signals (T1-T3)</li>
+                        <li>Speed references (AO1-AO3, 0-10V)</li>
+                        <li>Bypass valve control (AO4, 0-10V)</li>
+                        <li>Heater controls (CH1-CH3)</li>
+                        <li>Isolation valve controls (CH4-CH9)</li>
+                        <li>System status and alarm conditions</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Safety and Monitoring Features</h3>
+            <div class="config-grid">
+                <div class="config-item">
+                    <h4>Safety Monitoring</h4>
+                    <ul class="config-list">
+                        <li>Continuous vibration monitoring per ISO10816</li>
+                        <li>Motor current monitoring with warning/critical thresholds</li>
+                        <li>Temperature sensor validation</li>
+                        <li>Pump status monitoring (>5A = running)</li>
+                        <li>Emergency shutdown with immediate safe state</li>
+                        <li>Weekly lead tower rotation for even wear</li>
+                    </ul>
+                </div>
+                <div class="config-item">
+                    <h4>Fault Handling</h4>
+                    <ul class="config-list">
+                        <li>Immediate shutdown on critical faults</li>
+                        <li>Speed reduction on current warnings</li>
+                        <li>Configurable bypasses for commissioning</li>
+                        <li>Comprehensive fault logging with equipment IDs</li>
+                        <li>Error recovery with safe default states</li>
+                        <li>Real-time alarm status reporting</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="signature-section">
+            <div class="signature">
+                <div class="signature-name">Andrew G. Jewell Sr.</div>
+                <div class="signature-line"></div>
+                <div class="signature-title">
+                    Andrew G. Jewell Sr.<br>
+                    Founder & AI Systems Engineer<br>
+                    Date: September 11, 2025
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cooling Tower Control System Cut Sheets</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 10px;
+            background: white;
+            font-size: 11px;
+            color: #333;
+            position: relative;
+        }
+
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 120px;
+            color: rgba(200, 200, 200, 0.03);
+            font-weight: bold;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .sheet {
+            margin-bottom: 20px;
+            border: 2px solid #00A8A8;
+            padding: 15px;
+            width: 100%;
+            background: white;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #00A8A8;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            position: relative;
+            padding-top: 70px;
+        }
+
+        .header-logos {
+            position: absolute;
+            top: 10px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-left,
+        .logo-right {
+            width: 80px;
+            height: 60px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .logo-left {
+            background-image: url('file:///D:/public/automata-nexus-logo.png');
+        }
+
+        .logo-right {
+            background-image: url('file:///D:/public/currentmechanical.jpg');
+        }
+
+        .header h2 {
+            color: #00A8A8;
+            margin-bottom: 5px;
+        }
+
+        .header h3 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .section {
+            border: 1px solid #ddd;
+            margin: 8px 0;
+            padding: 8px;
+            background: #f8f9fa;
+        }
+
+        .io-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 5px 0;
+            font-size: 9px;
+            background: white;
+        }
+
+        .io-table th,
+        .io-table td {
+            border: 1px solid #ddd;
+            padding: 3px;
+            text-align: left;
+        }
+
+        .io-table th {
+            background-color: #e8f4f8;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .sequence-box {
+            border: 1px solid #ddd;
+            padding: 8px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            font-size: 10px;
+        }
+
+        .component-diagram {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            margin: 5px;
+            background: white;
+            font-size: 10px;
+        }
+
+        .notes {
+            background: #e8f4f8;
+            border-left: 4px solid #00A8A8;
+            padding: 15px;
+            margin: 8px 0;
+            font-size: 10px;
+            color: #333;
+        }
+
+        .signature-section {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .signature {
+            text-align: left;
+        }
+
+        .signature-name {
+            font-family: 'Brush Script MT', cursive;
+            font-size: 22px;
+            color: #2c3e50;
+            margin-bottom: -8px;
+            transform: rotate(-1deg);
+            font-style: italic;
+        }
+
+        .signature-line {
+            border-top: 2px solid #333;
+            width: 200px;
+            margin: 0 0 4px 0;
+        }
+
+        .signature-title {
+            font-size: 12px;
+            line-height: 1.3;
+            color: #333;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="watermark">AUTOMATANEXUS 2025</div>
+
+    <div class="sheet">
+        <div class="header">
+            <div class="header-logos">
+                <div class="logo-left"></div>
+                <div class="logo-right"></div>
+            </div>
+            <h2>COOLING TOWER CONTROL SYSTEM</h2>
+            <h3>AUTOMATA NEXUS - 3 TOWER CONTROL PANEL</h3>
+            <p>Project: Cooling Tower Upgrade | Drawing: CT-001 | Rev: C | Date: 08/18/2025</p>
+            <p>Drawn by: A.Jewell Sr | Contractor: Current Mechanical</p>
+        </div>
+
+        <div class="section">
+            <h3><strong>EQUIPMENT IDENTIFICATION</strong></h3>
+            <table class="io-table">
+                <tr>
+                    <th>Equipment</th>
+                    <th>Equipment ID</th>
+                </tr>
+                <tr>
+                    <td>Cooling Tower-1</td>
+                    <td>QNiHngLxledu7BHM9wLi</td>
+                </tr>
+                <tr>
+                    <td>Cooling Tower-2</td>
+                    <td>H2lwkgXBNDsvnuKoDUQe</td>
+                </tr>
+                <tr>
+                    <td>Cooling Tower-3</td>
+                    <td>QYTVSM7IMylxDc2Y0pxr</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h3><strong>SYSTEM OVERVIEW</strong></h3>
+            <div class="two-column">
+                <div>
+                    <h4><strong>CONTROL HARDWARE:</strong></h4>
+                    <ul>
+                        <li>Automata Nexus Building Automation HAT</li>
+                        <li>- 4x 24V Triacs (T1-T3 VFD enables, T4 spare)</li>
+                        <li>- 4x 0-10V Outputs (AO1-3 speed, AO4 bypass valve)</li>
+                        <li>- 8x Universal Inputs (AI1-6 VFD currents, AI7-8 spare)</li>
+                        <li>16 Universal Input HAT</li>
+                        <li>16 Channel Relay HAT</li>
+                        <li>Raspberry Pi 5 Controller</li>
+                    </ul>
+
+                    <h4><strong>FIELD DEVICES PER TOWER:</strong></h4>
+                    <ul>
+                        <li>20HP VFD Motor</li>
+                        <li>Tower Water Pump (external control)</li>
+                        <li>Pump Current Sensor (0-10VDC, 0-50A)</li>
+                        <li>2x VFD Current Sensors (0-10VDC, 0-50A each)</li>
+                        <li>WTV801-RS485 Vibration Sensor (ISO10816)</li>
+                        <li>CH340 USB-RS485 Adapter</li>
+                        <li>Isolation Valve (24VDC) (existing)</li>
+                        <li>Loop Tempering Valve (24VDC) (existing)</li>
+                        <li>Tower Heater (relay controlled)</li>
+                        <li>RIB2401SB Control Relays</li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="component-diagram">
+                        <h4>CONTROL PANEL LAYOUT</h4>
+                        <div style="border: 1px solid black; padding: 15px; margin: 8px;">
+                            <div style="background: #e6f3ff; padding: 3px; margin: 1px;">Automata Nexus Building
+                                Automation HAT</div>
+                            <div style="background: #fff2e6; padding: 3px; margin: 1px;">16 Universal Input HAT</div>
+                            <div style="background: #e6ffe6; padding: 3px; margin: 1px;">16 Channel Relay HAT</div>
+                            <div style="background: #ffe6ff; padding: 3px; margin: 1px;">3x WTV801-RS485 Vibration
+                                Sensors</div>
+                            <div style="background: #ffffe6; padding: 3px; margin: 1px;">3x CH340 USB-RS485 Adapters
+                            </div>
+                            <div style="background: #f0f0f0; padding: 3px; margin: 1px;">Power Supply 24VDC</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>I/O ASSIGNMENTS SUMMARY</h3>
+            <table class="io-table">
+                <tr>
+                    <th>Building Automation HAT</th>
+                    <th>Function</th>
+                    <th>16 Input HAT</th>
+                    <th>Function</th>
+                    <th>16 Channel Relay HAT</th>
+                    <th>Function</th>
+                </tr>
+                <tr>
+                    <td>T1</td>
+                    <td>Tower 1 VFD Enable (24VAC Triac)</td>
+                    <td>CH1</td>
+                    <td>Tower Loop Supply Temp (1K RTD)</td>
+                    <td>CH1</td>
+                    <td>Tower 1 Heater Enable</td>
+                </tr>
+                <tr>
+                    <td>T2</td>
+                    <td>Tower 2 VFD Enable (24VAC Triac)</td>
+                    <td>CH2</td>
+                    <td>Tower Loop Return Temp (1K RTD)</td>
+                    <td>CH2</td>
+                    <td>Tower 2 Heater Enable</td>
+                </tr>
+                <tr>
+                    <td>T3</td>
+                    <td>Tower 3 VFD Enable (24VAC Triac)</td>
+                    <td>CH6</td>
+                    <td>Pump 1 Current (0-10V = 0-50A)</td>
+                    <td>CH3</td>
+                    <td>Tower 3 Heater Enable</td>
+                </tr>
+                <tr>
+                    <td>AO1</td>
+                    <td>Tower 1 VFD Speed Ref (0-10V)</td>
+                    <td>CH7</td>
+                    <td>Pump 2 Current (0-10V = 0-50A)</td>
+                    <td>CH4</td>
+                    <td>Tower 1 Isolation Valve Open</td>
+                </tr>
+                <tr>
+                    <td>AO2</td>
+                    <td>Tower 2 VFD Speed Ref (0-10V)</td>
+                    <td>CH8</td>
+                    <td>Pump 3 Current (0-10V = 0-50A)</td>
+                    <td>CH5</td>
+                    <td>Tower 1 Isolation Valve Close</td>
+                </tr>
+                <tr>
+                    <td>AO3</td>
+                    <td>Tower 3 VFD Speed Ref (0-10V)</td>
+                    <td>CH9</td>
+                    <td>HP Supply Temp (1K RTD)</td>
+                    <td>CH6</td>
+                    <td>Tower 2 Isolation Valve Open</td>
+                </tr>
+                <tr>
+                    <td>AO4</td>
+                    <td>Bypass Valve (0-10V)</td>
+                    <td>CH10</td>
+                    <td>HP Return Temp (1K RTD)</td>
+                    <td>CH7</td>
+                    <td>Tower 2 Isolation Valve Close</td>
+                </tr>
+                <tr>
+                    <td>AI1</td>
+                    <td>Tower 1 VFD Current L1 (0-10V = 0-50A)</td>
+                    <td>CH11</td>
+                    <td>Outdoor Air Temp (1K RTD)</td>
+                    <td>CH8</td>
+                    <td>Tower 3 Isolation Valve Open</td>
+                </tr>
+                <tr>
+                    <td>AI2</td>
+                    <td>Tower 1 VFD Current L3 (0-10V = 0-50A)</td>
+                    <td></td>
+                    <td></td>
+                    <td>CH9</td>
+                    <td>Tower 3 Isolation Valve Close</td>
+                </tr>
+                <tr>
+                    <td>AI3</td>
+                    <td>Tower 2 VFD Current L1 (0-10V = 0-50A)</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>AI4</td>
+                    <td>Tower 2 VFD Current L3 (0-10V = 0-50A)</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>AI5</td>
+                    <td>Tower 3 VFD Current L1 (0-10V = 0-50A)</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>AI6</td>
+                    <td>Tower 3 VFD Current L3 (0-10V = 0-50A)</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>AI7</td>
+                    <td>Spare Input</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>AI8</td>
+                    <td>Spare Input</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h3>VFD SPEED CONTROL CONFIGURATION</h3>
+            <div class="sequence-box">
+                <p><strong>PID Mode (VFD_SPEED_REF_ENABLE = true - Default):</strong></p>
+                <ul>
+                    <li>VFDs modulate continuously between 35-55Hz (3.5-5.5V output) to maintain 70°F supply temperature
+                        or user setpoint</li>
+                    <li>Uses controller's PID algorithms for smooth, precise temperature control</li>
+                    <li>Minimum speed: 35Hz (3.5V) • Maximum speed: 55Hz (5.5V)</li>
+                    <li>Low demand operation: Limited to 70% of maximum speed range</li>
+                    <li>High demand operation: 70-100% of speed range available</li>
+                </ul>
+
+                <p><strong>2-Speed Mode (VFD_SPEED_REF_ENABLE = false):</strong></p>
+                <ul>
+                    <li>Motors operate at discrete LOW and HIGH speeds to maintain setpoint</li>
+                    <li>LOW Speed: 35-45Hz (4.0V output) for normal cooling demand</li>
+                    <li>HIGH Speed: 50-55Hz (5.5V output) for high cooling demand</li>
+                    <li>Traditional staging control with hysteresis to prevent short cycling</li>
+                </ul>
+
+                <p><strong>Current Protection:</strong> Both modes include automatic speed reduction when VFD current
+                    warnings are detected (>40A)</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>CONTROL LOGIC SUMMARY</h3>
+            <div class="notes">
+                <p><strong>Key Features:</strong> Sequential cell staging based on heat pump supply water temperature •
+                    CTP (Cooling Tower Pump) control with isolation valves • VFD Speed Control: PID mode modulates
+                    35-55Hz to maintain 70°F setpoint, 2-Speed mode uses LOW=35-45Hz, HIGH=50-55Hz • Cell staging
+                    alternation weekly • Vibration monitoring: 4.5mm/s warning, 7.1mm/s critical • Current limits: VFD
+                    40A/45A, Pump 5A/45A • Freeze protection <35°F • Individual cell isolation valve control</p>
+            </div>
+            <div class="notes">
+                <p><strong>VFD Speed Control Modes:</strong></p>
+                <ul>
+                    <li><strong>PID Mode (Default):</strong> VFDs modulate continuously between 35-55Hz (3.5-5.5V) to
+                        maintain 70°F supply temperature or user setpoint</li>
+                    <li><strong>2-Speed Mode:</strong> Motors run at discrete LOW (35-45Hz, 4.0V) and HIGH (50-55Hz,
+                        5.5V) speeds to maintain setpoint</li>
+                    <li><strong>Configuration:</strong> VFD_SPEED_REF_ENABLE = true (PID mode) or false (2-speed mode)
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="notes">
+            <h4>GENERAL NOTES:</h4>
+            <ul>
+                <li>Current sensors: 0-10VDC (0V=0A, 10V=50A) • Temperature sensors: 1K Platinum RTD • VFD control:
+                    0-10VDC speed reference only • Control voltage: 24VDC • Motor power: 480VAC 3-phase • No E-Stop, VFD
+                    faults, or water level sensor currently wired</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="sheet">
+        <div class="header">
+            <div class="header-logos">
+                <div class="logo-left"></div>
+                <div class="logo-right"></div>
+            </div>
+            <h2>SEQUENCE OF OPERATIONS</h2>
+            <h3>COOLING TOWER CONTROL LOGIC</h3>
+            <p>Drawing: CT-002 | Rev: C | Date: 08/18/2025</p>
+            <p>Drawn by: A.Jewell Sr | Contractor: Current Mechanical</p>
+        </div>
+
+        <div class="sequence-box">
+            <h3>STARTUP & SAFETY</h3>
+            <p><strong>Power On:</strong> 24VDC to HATs → I2C communication check → Initialize I/O to safe state → All
+                outputs DE-ENERGIZED</p>
+            <p><strong>Safety Checks:</strong> Temperature sensors valid range → VFD/pump current sensors operational →
+                Vibration monitoring (RS485) → Safety bypasses configured</p>
+            <p><strong>Ready State:</strong> Weekly cell alternation active → All interlocks satisfied → Awaiting
+                cooling demand</p>
+        </div>
+
+        <div class="sequence-box">
+            <h3>NORMAL OPERATION - STARTUP SEQUENCE</h3>
+            <p><strong>Based upon heat pump supply water temperature, the cooling tower pumps will be started in
+                    sequence with the starting of the tower fans, as follows:</strong></p>
+
+            <table class="io-table">
+                <tr>
+                    <th>Stage</th>
+                    <th>Condition</th>
+                    <th>Action</th>
+                </tr>
+                <tr>
+                    <td>Stage 1</td>
+                    <td>Heat Pump Supply Water Temp</td>
+                    <td>Start Lead CTP and Open Valve on 2 Cells</td>
+                </tr>
+                <tr>
+                    <td>Stage 2</td>
+                    <td>Continued cooling demand</td>
+                    <td>Start 1st Cell Fan on Low Speed</td>
+                </tr>
+                <tr>
+                    <td>Stage 3</td>
+                    <td>Continued cooling demand</td>
+                    <td>Start 2nd Cell Fan on Low Speed</td>
+                </tr>
+                <tr>
+                    <td>Stage 4</td>
+                    <td>Continued cooling demand</td>
+                    <td>Start Lag CTP and Open Valve on 3rd Cell</td>
+                </tr>
+                <tr>
+                    <td>Stage 5</td>
+                    <td>Continued cooling demand</td>
+                    <td>Start 3rd Cell Fan on Low Speed</td>
+                </tr>
+                <tr>
+                    <td>Stage 6</td>
+                    <td>Continued cooling demand</td>
+                    <td>Start 1st Cell Fan on High Speed</td>
+                </tr>
+                <tr>
+                    <td>Stage 7</td>
+                    <td>Continued cooling demand</td>
+                    <td>Start 2nd Cell Fan on High Speed</td>
+                </tr>
+                <tr>
+                    <td>Stage 8</td>
+                    <td>Continued cooling demand</td>
+                    <td>Start 3rd Cell Fan on High Speed</td>
+                </tr>
+            </table>
+
+            <p><strong>Shutdown Sequence:</strong></p>
+            <table class="io-table">
+                <tr>
+                    <th>Stage</th>
+                    <th>Action</th>
+                </tr>
+                <tr>
+                    <td>Shutdown 1</td>
+                    <td>Turn Off Lead CTP and Close Valves on 2 Cells</td>
+                </tr>
+                <tr>
+                    <td>Shutdown 2</td>
+                    <td>Turn Off 1st Cell Low Speed Fan</td>
+                </tr>
+                <tr>
+                    <td>Shutdown 3</td>
+                    <td>Turn Off 2nd Cell Low Speed Fan</td>
+                </tr>
+                <tr>
+                    <td>Shutdown 4</td>
+                    <td>Turn Off Lag CTP and Close Valve on 3rd Cell</td>
+                </tr>
+                <tr>
+                    <td>Shutdown 5</td>
+                    <td>Turn Off 3rd Cell Low Speed Fan</td>
+                </tr>
+                <tr>
+                    <td>Shutdown 6</td>
+                    <td>Turn Off 1st Cell High Speed Fan, Turn On Low Speed Fan</td>
+                </tr>
+                <tr>
+                    <td>Shutdown 7</td>
+                    <td>Turn Off 2nd Cell High Speed Fan, Turn On Low Speed Fan</td>
+                </tr>
+                <tr>
+                    <td>Shutdown 8</td>
+                    <td>Turn Off 3rd Cell High Speed Fan, Turn On Low Speed Fan</td>
+                </tr>
+            </table>
+
+            <p><strong>Staging Notes:</strong> The cooling tower pumps and cells will be alternated weekly. There will
+                be a built-in time delay in starting the low speed when coming down from high speed to prevent damage to
+                fans and motors. The loop tempering valves will be modulated to maintain loop supply water temperature
+                setpoint.</p>
+        </div>
+
+        <div class="sequence-box">
+            <h3>ISOLATION VALVES & HEATER CONTROL</h3>
+            <p><strong>AO4 Bypass Valve:</strong> OAT<40°F: 0V (closed) • OAT>90°F: 10V (open) • 40-90°F: Modulated
+                    5V±adjustment</p>
+            <p><strong>Isolation Valves:</strong> CH4 (Tower 1 Open), CH5 (Tower 1 Close), CH6 (Tower 2 Open), CH7
+                (Tower 2 Close), CH8 (Tower 3 Open), CH9 (Tower 3 Close) - Individual relay control for cell staging</p>
+            <p><strong>Tower Heaters:</strong> CH1 (Tower 1), CH2 (Tower 2), CH3 (Tower 3) Enable <35°F • Disable>45°F •
+                    Hysteresis 35-45°F prevents cycling</p>
+        </div>
+
+        <div class="sequence-box">
+            <h3>ENABLE CONDITIONS & SHUTDOWN</h3>
+            <p><strong>Tower Enable Requires:</strong> System AUTO mode • Pump running (>5A) or bypassed • VFD current
+                sensors OK • Vibration <7.1mm /s or bypassed • Temp sensors valid • No critical alarms</p>
+
+                    <p><strong>Normal Shutdown:</strong> Follow shutdown sequence stages • Built-in time delays for
+                        motor protection • Staged shutdown to prevent system shock</p>
+                    <p><strong>Emergency Shutdown:</strong> Immediate 0VDC speeds → DE-ENERGIZE all triacs → Safe bypass
+                        valve position → Close isolation valves → Activate alarms</p>
+        </div>
+
+        <div class="sequence-box">
+            <h3>ALARM CONDITIONS</h3>
+            <table class="io-table">
+                <tr>
+                    <th>Alarm</th>
+                    <th>Detection</th>
+                    <th>Action</th>
+                    <th>Priority</th>
+                </tr>
+                <tr>
+                    <td>High Vibration Critical</td>
+                    <td>WTV801 >7.1mm/s</td>
+                    <td>Stop affected tower immediately</td>
+                    <td>CRITICAL</td>
+                </tr>
+                <tr>
+                    <td>High VFD Current Critical</td>
+                    <td>AI1-6 >9.0V (45A)</td>
+                    <td>Stop affected tower immediately</td>
+                    <td>CRITICAL</td>
+                </tr>
+                <tr>
+                    <td>High/Low Pump Current</td>
+                    <td>CH6-8 >9.0V or <1.0V< /td>
+                    <td>Stop tower, 30s delay for low</td>
+                    <td>HIGH</td>
+                </tr>
+                <tr>
+                    <td>High Vibration Warning</td>
+                    <td>WTV801 >4.5mm/s</td>
+                    <td>Log alarm, continue operation</td>
+                    <td>MEDIUM</td>
+                </tr>
+                <tr>
+                    <td>High VFD Current Warning</td>
+                    <td>AI1-6 >8.0V (40A)</td>
+                    <td>Reduce speed (PID: 20% reduction, 2-Speed: drop to LOW)</td>
+                    <td>MEDIUM</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="notes">
+            <h4>CONTROL NOTES:</h4>
+            <ul>
+                <li><strong>Speed Control:</strong> PID Mode: Continuous modulation 35-55Hz (3.5-5.5V) to maintain
+                    setpoint • 2-Speed Mode: LOW=4.0V (35-45Hz), HIGH=5.5V (50-55Hz) • <strong>Current
+                        Monitoring:</strong> 0-10V = 0-50A all sensors • <strong>Safety Bypasses:</strong> Configurable
+                    for commissioning • <strong>Logging:</strong> All operations timestamped • <strong>BMS
+                        Communication:</strong> 30-second updates • <strong>Freeze Protection:</strong>
+                    <35°F OAT • <strong>Target Temperature:</strong> 70°F supply temperature (user adjustable)
+                </li>
+            </ul>
+        </div>
+
+        <div class="signature-section">
+            <div class="signature">
+                <div class="signature-name">Andrew G. Jewell Sr.</div>
+                <div class="signature-line"></div>
+                <div class="signature-title">
+                    Andrew G. Jewell Sr.<br>
+                    Founder & AI Systems Engineer<br>
+                    Date: September 11, 2025
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

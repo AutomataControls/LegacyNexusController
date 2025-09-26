@@ -1,0 +1,275 @@
+[
+  {
+    "boardType": "megabas",
+    "stackAddress": 0,
+    "enabled": true,
+    "outputs": {
+      "1": {
+        "name": "Tower 1 VFD Enable (24VAC Triac)",
+        "type": "triac",
+        "enabled": true
+      },
+      "2": {
+        "name": "Tower 2 VFD Enable (24VAC Triac)",
+        "type": "triac",
+        "enabled": true
+      },
+      "3": {
+        "name": "Tower 3 VFD Enable (24VAC Triac)",
+        "type": "triac",
+        "enabled": true
+      },
+      "5": {
+        "name": "VFD 1 Speed",
+        "type": "0-10V",
+        "enabled": true
+      },
+      "6": {
+        "name": "VFD 2 Speed",
+        "type": "0-10V",
+        "enabled": true
+      },
+      "7": {
+        "name": "VFD 3 Speed",
+        "type": "0-10V",
+        "enabled": true
+      },
+      "8": {
+        "name": "Bypass Valve (0-10V)",
+        "type": "0-10V",
+        "enabled": true
+      }
+    },
+    "inputs": {
+      "1": {
+        "name": "Tower 1 VFD Current L1 (0-10V = 0-50A)",
+        "inputType": "0-10V",
+        "conversionType": "amps",
+        "enabled": true,
+        "scaling": "0-50"
+      },
+      "2": {
+        "name": "Tower 1 VFD Current L3 (0-10V = 0-50A)",
+        "inputType": "0-10V",
+        "conversionType": "amps",
+        "enabled": true,
+        "scaling": "0-50"
+      },
+      "3": {
+        "name": "Tower 2 VFD Current L1 (0-10V = 0-50A)",
+        "inputType": "0-10V",
+        "conversionType": "amps",
+        "enabled": true,
+        "scaling": "0-50"
+      },
+      "4": {
+        "name": "Tower 2 VFD Current L3 (0-10V = 0-50A)",
+        "inputType": "0-10V",
+        "conversionType": "amps",
+        "enabled": true,
+        "scaling": "0-50"
+      },
+      "5": {
+        "name": "Tower 3 VFD Current L1 (0-10V = 0-50A)",
+        "inputType": "0-10V",
+        "conversionType": "amps",
+        "enabled": true,
+        "scaling": "0-50"
+      },
+      "6": {
+        "name": "Tower 3 VFD Current L3 (0-10V = 0-50A)",
+        "inputType": "0-10V",
+        "conversionType": "amps",
+        "enabled": true,
+        "scaling": "0-50"
+      },
+      "7": {
+        "name": "VFD Current 7",
+        "inputType": "0-10V",
+        "conversionType": "voltage",
+        "enabled": true
+      },
+      "8": {
+        "name": "VFD Current 8",
+        "inputType": "0-10V",
+        "conversionType": "voltage",
+        "enabled": true
+      }
+    }
+  },
+  {
+    "boardType": "16univin",
+    "stackAddress": 0,
+    "enabled": true,
+    "outputs": {},
+    "inputs": {
+      "1": {
+        "name": "HP Loop Return Temp (10K NTC)",
+        "inputType": "10k",
+        "conversionType": "temperature",
+        "enabled": true
+      },
+      "2": {
+        "name": "HP Loop Supply Temp (10K NTC)",
+        "inputType": "10k",
+        "conversionType": "temperature",
+        "enabled": true
+      },
+      "3": {
+        "name": "",
+        "inputType": "0-10V",
+        "conversionType": "temperature",
+        "enabled": false
+      },
+      "4": {
+        "name": "",
+        "inputType": "0-10V",
+        "conversionType": "temperature",
+        "enabled": false
+      },
+      "5": {
+        "name": "Pump 2 Current (0-10V = 0-50A)",
+        "inputType": "0-10V",
+        "conversionType": "amps",
+        "enabled": true,
+        "scaling": "0-50"
+      },
+      "6": {
+        "name": "",
+        "inputType": "0-10V",
+        "conversionType": "temperature",
+        "enabled": false
+      },
+      "7": {
+        "name": "Pump 3 Current (0-10V = 0-50A)",
+        "inputType": "0-10V",
+        "conversionType": "amps",
+        "enabled": true,
+        "scaling": "0-50"
+      },
+      "8": {
+        "name": "Pump 1 Current (0-10V = 0-50A)",
+        "inputType": "0-10V",
+        "conversionType": "amps",
+        "enabled": true,
+        "scaling": "0-50"
+      },
+      "9": {
+        "name": "Tower  Return Temp (10K NTC)",
+        "inputType": "10k",
+        "conversionType": "temperature",
+        "enabled": true
+      },
+      "10": {
+        "name": "Tower Supply Temp (10K NTC)",
+        "inputType": "10k",
+        "conversionType": "temperature",
+        "enabled": true
+      },
+      "11": {
+        "name": "Outdoor Air Temp (1K RTD)",
+        "inputType": "1k",
+        "conversionType": "temperature",
+        "enabled": true
+      },
+      "12": {
+        "name": "HP Loop Supply Temp (10K NTC)",
+        "inputType": "0-10V",
+        "conversionType": "temperature",
+        "enabled": false
+      },
+      "13": {
+        "name": "",
+        "inputType": "0-10V",
+        "conversionType": "temperature",
+        "enabled": false
+      },
+      "14": {
+        "name": "",
+        "inputType": "0-10V",
+        "conversionType": "temperature",
+        "enabled": false
+      },
+      "15": {
+        "name": "",
+        "inputType": "0-10V",
+        "conversionType": "temperature",
+        "enabled": false
+      },
+      "16": {
+        "name": "",
+        "inputType": "0-10V",
+        "conversionType": "temperature",
+        "enabled": false
+      }
+    }
+  },
+  {
+    "boardType": "16relind",
+    "stackAddress": 0,
+    "enabled": true,
+    "outputs": {
+      "1": {
+        "name": "Pump 1 Enable",
+        "type": "relay",
+        "enabled": true
+      },
+      "2": {
+        "name": "Pump 2 Enable",
+        "type": "relay",
+        "enabled": true
+      },
+      "3": {
+        "name": "Pump 3 Enable",
+        "type": "relay",
+        "enabled": true
+      },
+      "7": {
+        "name": "Tower 3 Isolation Valve Close",
+        "type": "relay",
+        "enabled": true
+      },
+      "8": {
+        "name": "Tower 3 Isolation Valve Open",
+        "type": "relay",
+        "enabled": true
+      },
+      "9": {
+        "name": "Tower 2 Isolation Valve Close",
+        "type": "relay",
+        "enabled": true
+      },
+      "10": {
+        "name": "Tower 2 Isolation Valve Open",
+        "type": "relay",
+        "enabled": true
+      },
+      "11": {
+        "name": "Tower 1 Isolation Valve Close",
+        "type": "relay",
+        "enabled": true
+      },
+      "12": {
+        "name": "Tower 1 Isolation Valve Open",
+        "type": "relay",
+        "enabled": true
+      },
+      "14": {
+        "name": "Tower 3 Heater Enable",
+        "type": "relay",
+        "enabled": true
+      },
+      "15": {
+        "name": "Tower 2 Heater Enable",
+        "type": "relay",
+        "enabled": true
+      },
+      "16": {
+        "name": "Tower 1 Heater Enable",
+        "type": "relay",
+        "enabled": true
+      }
+    },
+    "inputs": {}
+  }
+]

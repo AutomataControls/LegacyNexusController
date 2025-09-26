@@ -1,0 +1,551 @@
+/* Dashboard Container */
+.dashboard-container {
+  padding: 1.5rem;
+  background: #f9fafb;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.dashboard-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 1rem;
+  color: #6b7280;
+}
+
+/* ROW 1: Status Buttons - Like sidebar buttons but horizontal */
+.status-buttons-row {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+}
+
+.status-button {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  cursor: default;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Node-RED status (ultra light red) */
+.status-button.nodered.online {
+  background: #fff5f5;
+  border-color: #fca5a5;
+  box-shadow: 0 0 16px rgba(252, 165, 165, 0.25), 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.status-button.nodered.online .status-icon {
+  color: #ef4444;
+}
+
+/* NeuralBMS status (ultra light teal) */
+.status-button.neuralbms.online {
+  background: #f0fdfa;
+  border-color: #5eead4;
+  box-shadow: 0 0 16px rgba(94, 234, 212, 0.25), 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.status-button.neuralbms.online .status-icon {
+  color: #14b8a6;
+}
+
+/* Cloudflare status (ultra light orange) */
+.status-button.cloudflare.online {
+  background: #fff7ed;
+  border-color: #fed7aa;
+  box-shadow: 0 0 16px rgba(254, 215, 170, 0.25), 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.status-button.cloudflare.online .status-icon {
+  color: #f97316;
+}
+
+/* Offline state for all */
+.status-button.offline {
+  background: white;
+  border-color: #e5e7eb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* Checking state for all */
+.status-button.checking {
+  background: white;
+  border-color: #fbbf24;
+  animation: pulse-checking 2s infinite;
+}
+
+@keyframes pulse-checking {
+  0%, 100% {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(251, 191, 36, 0.3), 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+}
+
+.status-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+}
+
+.status-button.online .status-icon {
+  color: #14b8a6;
+}
+
+.status-button.offline .status-icon {
+  color: #9ca3af;
+}
+
+.status-button.checking .status-icon {
+  color: #fbbf24;
+}
+
+.status-text {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+}
+
+/* Valve Status Indicators */
+.valve-status-row {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: -0.5rem;
+}
+
+.valve-indicator {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  min-width: 110px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.valve-indicator.closed {
+  background: #fffbfb;
+  border-color: #fecaca;
+  box-shadow: 0 0 6px rgba(254, 202, 202, 0.15), 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.valve-indicator.open {
+  background: #f6fffe;
+  border-color: #99f6e4;
+  box-shadow: 0 0 6px rgba(153, 246, 228, 0.15), 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.valve-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+}
+
+.valve-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.valve-indicator.closed .valve-icon {
+  color: #ef4444;
+}
+
+.valve-indicator.open .valve-icon {
+  color: #14b8a6;
+}
+
+.valve-text {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+}
+
+.valve-state {
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: #9ca3af;
+}
+
+.valve-indicator.closed .valve-state {
+  color: #dc2626;
+}
+
+.valve-indicator.open .valve-state {
+  color: #0d9488;
+}
+
+/* ROW 2: Weather Widget, TrendGraph, and NodeRED Readings */
+.weather-row {
+  width: 100%;
+  position: relative;
+  height: 380px;
+}
+
+.weather-card {
+  position: absolute;
+  left: 0;
+  width: 350px;
+  height: 380px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  color: #374151;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.weather-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.weather-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.weather-main-icon {
+  width: 100px;
+  height: 100px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+}
+
+.weather-main-info {
+  flex: 1;
+}
+
+.weather-temperature {
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+  color: #111827;
+}
+
+.weather-description {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.weather-feels {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.weather-stats {
+  display: flex;
+  justify-content: space-around;
+  padding: 1rem 0;
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.weather-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.weather-stat i {
+  font-size: 1.25rem;
+  color: #14b8a6;
+}
+
+.weather-stat span {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.weather-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #9ca3af;
+  position: relative;
+}
+
+.weather-edit-btn {
+  position: absolute;
+  right: 0;
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.25rem;
+  padding: 0.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.weather-edit-btn:hover {
+  background: #f3f4f6;
+  border-color: #14b8a6;
+  color: #14b8a6;
+}
+
+.weather-edit-btn:active {
+  transform: scale(0.95);
+}
+
+/* ROW 3: Metrics Grid */
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  width: 100%;
+}
+
+@media (max-width: 1200px) {
+  .metrics-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .metrics-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.metric-box {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.metric-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.metric-icon-wrapper {
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.metric-icon-wrapper.cpu {
+  background: #f0fdfa;
+  color: #14b8a6;
+}
+
+.metric-icon-wrapper.memory {
+  background: #f0f9ff;
+  color: #0284c7;
+}
+
+.metric-icon-wrapper.disk {
+  background: #f5f3ff;
+  color: #7c3aed;
+}
+
+.metric-icon-wrapper.uptime {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.metric-icon-wrapper.network {
+  background: #f0fdfa;
+  color: #14b8a6;
+}
+
+.metric-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* IP Toggle Button */
+.ip-toggle-btn {
+  padding: 0.25rem;
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  color: #6b7280;
+}
+
+.ip-toggle-btn:hover {
+  background: #f3f4f6;
+  border-color: #14b8a6;
+  color: #14b8a6;
+}
+
+.ip-toggle-btn:active {
+  transform: scale(0.95);
+}
+
+/* Network box specific adjustments */
+.network-box .metric-status {
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  color: #0d9488;
+  font-weight: 600;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1;
+}
+
+.metric-status {
+  font-size: 0.75rem;
+  color: #14b8a6;
+  font-weight: 500;
+}
+
+.metric-subtext {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.metric-bar {
+  width: 100%;
+  height: 4px;
+  background: #f3f4f6;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.metric-bar-fill {
+  height: 100%;
+  transition: width 0.5s ease;
+  border-radius: 2px;
+}
+
+.metric-bar-fill.cpu {
+  background: linear-gradient(90deg, #14b8a6, #0d9488);
+}
+
+.metric-bar-fill.memory {
+  background: linear-gradient(90deg, #0ea5e9, #0284c7);
+}
+
+/* ROW 4: Charts */
+.charts-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  width: 100%;
+}
+
+@media (max-width: 1200px) {
+  .charts-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chart-box {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chart-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.chart-header h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #374151;
+  margin: 0;
+}
+
+.chart-current {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #14b8a6;
+}
+
+.chart-content {
+  height: 200px;
+  position: relative;
+}

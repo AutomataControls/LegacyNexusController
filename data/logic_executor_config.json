@@ -1,0 +1,11 @@
+{
+  "equipmentId": "QNiHngLxledu7BHM9wLi",
+  "allEquipmentIds": [
+    "QNiHngLxledu7BHM9wLi"
+  ],
+  "enabled": true,
+  "autoRunEnabled": true,
+  "pollingInterval": 15,
+  "logicFilePath": "/home/Automata/remote-access-portal/logic/equipment/QNiHngLxledu7BHM9wLi.js",
+  "updatedAt": "2025-09-19T01:19:39.909Z"
+}

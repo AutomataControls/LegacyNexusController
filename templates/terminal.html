@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Terminal - Automata Remote Access{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
+<style>
+    .terminal-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #000;
+        padding: 10px;
+    }
+    
+    #terminal {
+        width: 100%;
+        height: 100%;
+    }
+    
+    .terminal-header {
+        background: #1a1a1a;
+        color: #0f0;
+        padding: 10px;
+        font-family: monospace;
+        border-bottom: 1px solid #333;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="terminal-container">
+    <div class="terminal-header">
+        Terminal - {{ serial }} 
+        <span style="float: right; color: #888;">Press Ctrl+C to copy, Ctrl+V to paste</span>
+    </div>
+    <div id="terminal"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm-addon-web-links@0.9.0/lib/xterm-addon-web-links.js"></script>
+
+<script>
+    // Initialize terminal
+    const term = new Terminal({
+        cursorBlink: true,
+        fontSize: 14,
+        fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+        theme: {
+            background: '#000000',
+            foreground: '#00ff00',
+            cursor: '#00ff00',
+            cursorAccent: '#000000',
+            selection: '#00ff0040',
+            black: '#000000',
+            red: '#ff0000',
+            green: '#00ff00',
+            yellow: '#ffff00',
+            blue: '#0080ff',
+            magenta: '#ff00ff',
+            cyan: '#00ffff',
+            white: '#ffffff',
+            brightBlack: '#808080',
+            brightRed: '#ff8080',
+            brightGreen: '#80ff80',
+            brightYellow: '#ffff80',
+            brightBlue: '#80c0ff',
+            brightMagenta: '#ff80ff',
+            brightCyan: '#80ffff',
+            brightWhite: '#ffffff'
+        }
+    });
+    
+    // Fit addon
+    const fitAddon = new FitAddon.FitAddon();
+    term.loadAddon(fitAddon);
+    
+    // Web links addon
+    const webLinksAddon = new WebLinksAddon.WebLinksAddon();
+    term.loadAddon(webLinksAddon);
+    
+    // Open terminal in container
+    term.open(document.getElementById('terminal'));
+    fitAddon.fit();
+    
+    // Connect to WebSocket
+    const socket = io();
+    
+    // Terminal connected
+    socket.on('connect', () => {
+        socket.emit('terminal_connect', {
+            cols: term.cols,
+            rows: term.rows
+        });
+    });
+    
+    // Receive terminal output
+    socket.on('terminal_output', (data) => {
+        term.write(data.data);
+    });
+    
+    // Send terminal input
+    term.onData((data) => {
+        socket.emit('terminal_input', { data: data });
+    });
+    
+    // Handle resize
+    window.addEventListener('resize', () => {
+        fitAddon.fit();
+        socket.emit('terminal_resize', {
+            cols: term.cols,
+            rows: term.rows
+        });
+    });
+    
+    // Handle paste
+    term.attachCustomKeyEventHandler((event) => {
+        // Ctrl+V
+        if (event.ctrlKey && event.key === 'v') {
+            navigator.clipboard.readText().then(text => {
+                socket.emit('terminal_input', { data: text });
+            });
+            return false;
+        }
+        // Ctrl+C for copy (let xterm handle selection)
+        return true;
+    });
+    
+    // Initial focus
+    term.focus();
+</script>
+{% endblock %}

@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Automata Remote Access{% endblock %}
+
+{% block content %}
+<div class="p-6">
+    <!-- Header -->
+    <div class="mb-6">
+        <h2 class="text-2xl font-bold">System Dashboard</h2>
+        <p class="text-gray-500">Remote access portal for {{ serial }}</p>
+    </div>
+    
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <!-- CPU Card -->
+        <div class="card">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm text-gray-500">CPU Usage</span>
+                <i data-lucide="cpu" class="w-5 h-5 text-blue-500"></i>
+            </div>
+            <div class="text-2xl font-bold" id="cpu-usage">--</div>
+            <div class="text-sm text-gray-500" id="cpu-temp">Temp: --</div>
+        </div>
+        
+        <!-- Memory Card -->
+        <div class="card">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm text-gray-500">Memory</span>
+                <i data-lucide="memory-stick" class="w-5 h-5 text-green-500"></i>
+            </div>
+            <div class="text-2xl font-bold" id="mem-usage">--</div>
+            <div class="text-sm text-gray-500" id="mem-detail">-- / -- MB</div>
+        </div>
+        
+        <!-- Disk Card -->
+        <div class="card">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm text-gray-500">Disk Usage</span>
+                <i data-lucide="hard-drive" class="w-5 h-5 text-purple-500"></i>
+            </div>
+            <div class="text-2xl font-bold" id="disk-usage">--</div>
+            <div class="text-sm text-gray-500" id="disk-detail">-- used</div>
+        </div>
+        
+        <!-- Network Card -->
+        <div class="card">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm text-gray-500">Network</span>
+                <i data-lucide="wifi" class="w-5 h-5 text-orange-500"></i>
+            </div>
+            <div class="text-2xl font-bold" id="ip-address">--</div>
+            <div class="text-sm text-gray-500" id="hostname">--</div>
+        </div>
+    </div>
+    
+    <!-- Services Status -->
+    <div class="card mb-6">
+        <h3 class="text-lg font-semibold mb-4">Service Status</h3>
+        <div class="space-y-3">
+            <!-- Node-RED Status -->
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="git-branch" class="w-5 h-5"></i>
+                    <span class="font-medium">Node-RED</span>
+                </div>
+                <span id="nodered-status" class="badge">Checking...</span>
+            </div>
+            
+            <!-- Cloudflare Tunnel Status -->
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="cloud" class="w-5 h-5"></i>
+                    <span class="font-medium">Cloudflare Tunnel</span>
+                </div>
+                <span id="cloudflared-status" class="badge">Checking...</span>
+            </div>
+            
+            <!-- Portal Status -->
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="server" class="w-5 h-5"></i>
+                    <span class="font-medium">Access Portal</span>
+                </div>
+                <span class="badge badge-success">Running</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="card">
+        <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="/nodered" class="flex items-center justify-center gap-2 p-4 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition-colors">
+                <i data-lucide="git-branch" class="w-5 h-5"></i>
+                <span>Open Node-RED</span>
+            </a>
+            
+            <a href="/terminal" class="flex items-center justify-center gap-2 p-4 bg-green-50 text-green-600 rounded hover:bg-green-100 transition-colors">
+                <i data-lucide="terminal" class="w-5 h-5"></i>
+                <span>Open Terminal</span>
+            </a>
+            
+            <a href="/neuralbms" class="flex items-center justify-center gap-2 p-4 bg-purple-50 text-purple-600 rounded hover:bg-purple-100 transition-colors">
+                <i data-lucide="brain" class="w-5 h-5"></i>
+                <span>Open Neural BMS</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function updateSystemInfo() {
+        try {
+            const response = await fetch('/api/system-info');
+            const data = await response.json();
+            
+            // Update CPU
+            document.getElementById('cpu-usage').textContent = data.cpu_usage ? `${data.cpu_usage.toFixed(1)}%` : '--';
+            document.getElementById('cpu-temp').textContent = data.cpu_temp ? `Temp: ${data.cpu_temp}` : 'Temp: --';
+            
+            // Update Memory
+            document.getElementById('mem-usage').textContent = data.mem_percent ? `${data.mem_percent}%` : '--';
+            document.getElementById('mem-detail').textContent = 
+                data.mem_used && data.mem_total ? `${data.mem_used} / ${data.mem_total} MB` : '-- / -- MB';
+            
+            // Update Disk
+            document.getElementById('disk-usage').textContent = data.disk_percent || '--';
+            document.getElementById('disk-detail').textContent = data.disk_used ? `${data.disk_used} used` : '-- used';
+            
+            // Update Network
+            document.getElementById('ip-address').textContent = data.ip_address || '--';
+            document.getElementById('hostname').textContent = data.hostname || '--';
+            
+            // Update Services
+            if (data.services) {
+                // Node-RED
+                const noderedStatus = document.getElementById('nodered-status');
+                if (data.services.nodered) {
+                    noderedStatus.className = 'badge badge-success';
+                    noderedStatus.textContent = 'Running';
+                } else {
+                    noderedStatus.className = 'badge badge-error';
+                    noderedStatus.textContent = 'Stopped';
+                }
+                
+                // Cloudflared
+                const cloudflaredStatus = document.getElementById('cloudflared-status');
+                if (data.services.cloudflared) {
+                    cloudflaredStatus.className = 'badge badge-success';
+                    cloudflaredStatus.textContent = 'Connected';
+                } else {
+                    cloudflaredStatus.className = 'badge badge-error';
+                    cloudflaredStatus.textContent = 'Disconnected';
+                }
+            }
+            
+            // Re-initialize icons
+            lucide.createIcons();
+            
+        } catch (error) {
+            console.error('Failed to update system info:', error);
+        }
+    }
+    
+    // Initial load
+    updateSystemInfo();
+    
+    // Update every 5 seconds
+    setInterval(updateSystemInfo, 5000);
+</script>
+{% endblock %}
