@@ -210,4 +210,4 @@ If something isn't working:
 *Last Updated: August 30, 2025*
 *This file should be updated when making significant changes*
 - ALWAYS READ 2000 LINES AT A TIMES.
-- EQUIPMENT CONTROL LOGIC FILE IS HERE STOP FUCKING FORGETING IT:/home/Automata/remote-access-portal/logic/equipment/QNiHngLxledu7BHM9wLi.js
+- EQUIPMENT CONTROL LOGIC FILE IS HERE STOP  FORGETING IT:/home/Automata/remote-access-portal/logic/equipment/QNiHngLxledu7BHM9wLi.js
