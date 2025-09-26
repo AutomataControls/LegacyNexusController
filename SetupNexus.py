@@ -764,21 +764,25 @@ Version 2.1.0 - Last Updated: November 2024"""
             # Stop and delete PM2 processes properly
             pm2_check = subprocess.run(['which', 'pm2'], capture_output=True)
             if pm2_check.returncode == 0:
-                # Stop and delete all PM2 apps
+                # Stop and delete all PM2 apps - try different methods to ensure they stop
                 self.queue.put(('console', 'Stopping all PM2 services...\n'))
-                pm2_apps = [
-                    'nexus-portal',
-                    'local-controller',
-                    'bms-reporter',
-                    'logic-executor',
-                    'processing-reporter',
-                    'vibration-monitor'
-                ]
-                for app in pm2_apps:
-                    subprocess.run(['pm2', 'stop', app], capture_output=True)
-                    subprocess.run(['pm2', 'delete', app], capture_output=True)
-                # Then kill all PM2 processes to ensure clean state
+
+                # Method 1: Try as the actual user (Automata)
+                subprocess.run(['sudo', '-u', user, 'pm2', 'stop', 'all'], capture_output=True)
+                subprocess.run(['sudo', '-u', user, 'pm2', 'delete', 'all'], capture_output=True)
+
+                # Method 2: Try without sudo
+                subprocess.run(['pm2', 'stop', 'all'], capture_output=True)
+                subprocess.run(['pm2', 'delete', 'all'], capture_output=True)
+
+                # Method 3: Kill PM2 daemon completely
+                subprocess.run(['sudo', '-u', user, 'pm2', 'kill'], capture_output=True)
                 subprocess.run(['pm2', 'kill'], capture_output=True)
+
+                # Method 4: Force kill any remaining node processes
+                subprocess.run(['sudo', 'pkill', '-f', 'PM2'], capture_output=True)
+                subprocess.run(['sudo', 'pkill', '-f', 'node'], capture_output=True)
+
                 self.queue.put(('console', '✓ All PM2 services stopped\n'))
             else:
                 # Fallback: kill all node processes if PM2 not found
@@ -2431,17 +2435,12 @@ WantedBy=multi-user.target
             self.queue.put(('console', 'Starting all PM2 services...\n'))
             os.chdir(portal_dest)
 
-            # Delete any existing PM2 apps first
-            pm2_apps = [
-                'nexus-portal',
-                'local-controller',
-                'bms-reporter',
-                'logic-executor',
-                'processing-reporter',
-                'vibration-monitor'
-            ]
-            for app in pm2_apps:
-                subprocess.run(['sudo', '-u', user, 'pm2', 'delete', app], capture_output=True)
+            # Delete any existing PM2 apps first - use 'all' to catch everything
+            subprocess.run(['sudo', '-u', user, 'pm2', 'stop', 'all'], capture_output=True)
+            subprocess.run(['sudo', '-u', user, 'pm2', 'delete', 'all'], capture_output=True)
+            # Also try without sudo in case PM2 is running as root
+            subprocess.run(['pm2', 'stop', 'all'], capture_output=True)
+            subprocess.run(['pm2', 'delete', 'all'], capture_output=True)
 
             # Start all services from ecosystem config
             pm2_start = subprocess.run(['sudo', '-u', user, 'pm2', 'start', 'ecosystem.config.js'],
