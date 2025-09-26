@@ -1626,13 +1626,13 @@ EMAIL_ADMIN=admin@automatacontrols.com
             
             subprocess.run(['chmod', '600', cred_file], check=True)
             
-            # Create config.yml
+            # Create config.yml - point directly to app port
             config_yml = f"""tunnel: {tunnel_id}
 credentials-file: {cred_file}
 
 ingress:
   - hostname: {self.tunnel_domain}
-    service: http://localhost:80
+    service: http://localhost:{port}
   - service: http_status:404
 """
             
@@ -1681,14 +1681,18 @@ ingress:
             
             self.queue.put(('console', f'✓ Tunnel configured: {self.tunnel_domain}\n\n'))
             
-            # STEP 11: Install and configure NGINX
+            # STEP 11: Configure NGINX (skip if not needed for direct tunnel)
             self.queue.put(('console', '═══════════════════════════════════════\n'))
-            self.queue.put(('console', 'STEP 11: INSTALLING AND CONFIGURING NGINX\n'))
+            self.queue.put(('console', 'STEP 11: CONFIGURING NGINX (OPTIONAL)\n'))
             self.queue.put(('console', '═══════════════════════════════════════\n\n'))
-            self.queue.put(('progress', (60, 'Installing NGINX...')))
-            
-            # Install NGINX
-            subprocess.run(['sudo', 'apt-get', 'install', '-y', 'nginx'], capture_output=True)
+            self.queue.put(('progress', (60, 'Checking NGINX...')))
+
+            # Skip NGINX configuration since Cloudflare tunnel connects directly to app
+            self.queue.put(('console', 'Cloudflare tunnel will connect directly to port ' + str(port) + '\n'))
+            self.queue.put(('console', 'NGINX configuration not required for tunnel setup\n\n'))
+
+            # Old NGINX code commented out - keeping for reference
+            '''
             
             # Create FULL NGINX configuration with WebSocket support
             nginx_config = f"""server {{
@@ -1782,7 +1786,8 @@ ingress:
                 self.queue.put(('console', '✓ NGINX configured and restarted\n\n'))
             else:
                 self.queue.put(('console', f'⚠️ NGINX configuration test failed: {nginx_test.stderr}\n\n'))
-            
+            '''
+
             # STEP 12: Create log directory and rotation
             self.queue.put(('console', '═══════════════════════════════════════\n'))
             self.queue.put(('console', 'STEP 12: CREATING LOG DIRECTORY AND ROTATION\n'))
@@ -2034,8 +2039,11 @@ RestartSec=5s
 WantedBy=multi-user.target
 """
             
-            with open('/etc/systemd/system/cloudflared.service', 'w') as f:
+            service_path = '/etc/systemd/system/cloudflared.service'
+            with open('/tmp/cloudflared.service', 'w') as f:
                 f.write(cloudflared_service)
+            subprocess.run(['sudo', 'mv', '/tmp/cloudflared.service', service_path], check=True)
+            subprocess.run(['sudo', 'chmod', '644', service_path], check=True)
             
             self.queue.put(('console', '✓ Cloudflared service created\n\n'))
             
@@ -2067,9 +2075,10 @@ WantedBy=multi-user.target
             self.queue.put(('console', '✓ PM2 configured to start on boot\n'))
             
             # Start cloudflared with systemd
-            subprocess.run(['systemctl', 'daemon-reload'], check=True)
-            subprocess.run(['systemctl', 'enable', 'cloudflared'], check=True)
-            subprocess.run(['systemctl', 'start', 'cloudflared'], check=True)
+            self.queue.put(('console', 'Starting Cloudflare tunnel service...\n'))
+            subprocess.run(['sudo', 'systemctl', 'daemon-reload'], check=True)
+            subprocess.run(['sudo', 'systemctl', 'enable', 'cloudflared'], check=True)
+            subprocess.run(['sudo', 'systemctl', 'start', 'cloudflared'], check=True)
             
             # Wait for services to start
             time.sleep(5)
@@ -2077,7 +2086,7 @@ WantedBy=multi-user.target
             # Check service status
             pm2_status = subprocess.run(['sudo', '-u', user, 'pm2', 'status'], 
                                       capture_output=True, text=True)
-            tunnel_status = subprocess.run(['systemctl', 'is-active', 'cloudflared'], 
+            tunnel_status = subprocess.run(['sudo', 'systemctl', 'is-active', 'cloudflared'],
                                          capture_output=True, text=True)
             
             if 'online' in pm2_status.stdout.lower():
