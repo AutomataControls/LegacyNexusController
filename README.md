@@ -56,7 +56,7 @@ The portal includes a comprehensive SQLite3 database system with automatic manag
    - User accounts with BCrypt password hashing
    - Session management and authentication
    - Role-based permissions system
-   - Default admin credentials: `admin` / `AutomataAdmin2024!`
+   - Default admin credentials: `DevOps` / `Invertedskynet2$`
 
 3. **Audit Log Database** (`audit.db`)
    - Complete user action tracking
@@ -112,7 +112,11 @@ Legacy Integration/
 │   │   └── automata-nexus-logo.png
 │   ├── server.js               # Express server with authentication
 │   ├── package.json            # Node.js dependencies
-│   └── tsconfig.json           # TypeScript configuration
+│   ├── tsconfig.json           # TypeScript configuration
+│   ├── ecosystem.config.js     # PM2 configuration
+│   ├── init.sh                 # Portal initialization script
+│   ├── init-databases.sh       # Database setup script
+│   └── restartnexus.sh         # Quick restart script
 └── README.md                    # This file
 ```
 
@@ -131,8 +135,8 @@ Legacy Integration/
 1. **Clone the repository:**
 ```bash
 cd /home/Automata
-git clone https://github.com/AutomataControls/LegacyIntegration.git
-cd LegacyIntegration
+git clone https://github.com/AutomataControls/LegacyNexusController.git
+cd LegacyNexusController
 ```
 
 2. **Make installers executable:**
@@ -201,34 +205,55 @@ RATE_LIMIT=100
 
 ## 🚦 Service Management
 
-### Start Services
+### PM2 Process Management
+The portal runs under PM2 process manager with the name `nexus-portal`.
+
+### Quick Commands
 ```bash
+# Restart portal (recommended method)
+./restartnexus.sh
+# OR from anywhere:
+restartnexus
+
+# Check PM2 status
+pm2 status
+
+# View logs
+pm2 logs nexus-portal
+
+# Stop portal
+pm2 stop nexus-portal
+
+# Start portal
+pm2 start nexus-portal
+
+# Monitor all processes
+pm2 monit
+```
+
+### Cloudflare Tunnel
+```bash
+# Start tunnel
 sudo systemctl start cloudflared
-sudo systemctl start automata-portal
-```
 
-### Stop Services
-```bash
+# Stop tunnel
 sudo systemctl stop cloudflared
-sudo systemctl stop automata-portal
-```
 
-### Check Status
-```bash
+# Check status
 sudo systemctl status cloudflared
-sudo systemctl status automata-portal
-```
 
-### View Logs
-```bash
+# View logs
 sudo journalctl -u cloudflared -f
-sudo journalctl -u automata-portal -f
 ```
 
-### Restart Services
+### Database Initialization
 ```bash
-sudo systemctl restart cloudflared
-sudo systemctl restart automata-portal
+# Initialize all databases
+./init-databases.sh
+
+# Check database contents
+sqlite3 data/metrics.db '.tables'
+sqlite3 data/metrics.db 'SELECT COUNT(*) FROM nodered_readings;'
 ```
 
 ## 🌐 Accessing Your Portal
@@ -284,7 +309,7 @@ Automatically installed by the installer:
 ### Portal Not Starting
 1. Check if port is already in use
 2. Verify .env file exists and is properly configured
-3. Check service logs: `sudo journalctl -u automata-portal -n 50`
+3. Check PM2 logs: `pm2 logs nexus-portal --lines 50`
 
 ### Tunnel Not Connecting
 1. Verify internet connection
