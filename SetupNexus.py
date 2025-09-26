@@ -843,13 +843,26 @@ Version 2.1.0 - Last Updated: November 2024"""
             self.queue.put(('console', '═══════════════════════════════════\n\n'))
             self.queue.put(('progress', (20, 'Installing hardware control libraries...')))
 
-            # Enable I2C interface first
-            self.queue.put(('console', 'Enabling I2C interface...\n'))
-            subprocess.run(['sudo', 'raspi-config', 'nonint', 'do_i2c', '0'], capture_output=True)
+            # Check and enable I2C interface if needed
+            self.queue.put(('console', 'Checking I2C interface...\n'))
+            i2c_check = subprocess.run(['sudo', 'raspi-config', 'nonint', 'get_i2c'],
+                                      capture_output=True, text=True)
+            if i2c_check.stdout.strip() == '0':
+                self.queue.put(('console', '  ✓ I2C already enabled\n'))
+            else:
+                self.queue.put(('console', '  Enabling I2C interface...\n'))
+                subprocess.run(['sudo', 'raspi-config', 'nonint', 'do_i2c', '0'], capture_output=True)
+                self.queue.put(('console', '  ✓ I2C enabled\n'))
 
-            # Install i2c tools
-            self.queue.put(('console', 'Installing I2C tools...\n'))
-            subprocess.run(['sudo', 'apt-get', 'install', '-y', 'i2c-tools'], capture_output=True)
+            # Check if i2c-tools already installed
+            self.queue.put(('console', 'Checking I2C tools...\n'))
+            i2c_tools_check = subprocess.run(['which', 'i2cdetect'], capture_output=True)
+            if i2c_tools_check.returncode == 0:
+                self.queue.put(('console', '  ✓ I2C tools already installed\n'))
+            else:
+                self.queue.put(('console', '  Installing I2C tools...\n'))
+                subprocess.run(['sudo', 'apt-get', 'install', '-y', 'i2c-tools'], capture_output=True)
+                self.queue.put(('console', '  ✓ I2C tools installed\n'))
 
             # Install Sequent Microsystems CLI tools from GitHub
             sm_repos = [
@@ -868,9 +881,18 @@ Version 2.1.0 - Last Updated: November 2024"""
             for repo_name, repo_url in sm_repos:
                 repo_path = os.path.join(automata_home, repo_name)
 
+                # Get the CLI tool name (remove -rpi suffix)
+                tool_name = repo_name.replace('-rpi', '')
+
+                # Check if CLI tool is already installed
+                tool_check = subprocess.run(['which', tool_name], capture_output=True)
+                if tool_check.returncode == 0:
+                    self.queue.put(('console', f'  ✓ {tool_name} already installed (skipping)\n'))
+                    continue  # Skip to next tool
+
                 if os.path.exists(repo_path):
                     # Repository exists, pull latest changes
-                    self.queue.put(('console', f'Updating {repo_name}...\n'))
+                    self.queue.put(('console', f'Updating {repo_name} repository...\n'))
                     subprocess.run(['git', 'pull'], cwd=repo_path, capture_output=True)
                 else:
                     # Clone the repository
@@ -880,13 +902,13 @@ Version 2.1.0 - Last Updated: November 2024"""
                     if clone_result.returncode != 0:
                         self.queue.put(('console', f'  ⚠️ Clone warning: {clone_result.stderr}\n'))
 
-                # Run make install
+                # Run make install only if tool not already installed
                 if os.path.exists(repo_path):
-                    self.queue.put(('console', f'  Installing {repo_name}...\n'))
+                    self.queue.put(('console', f'  Installing {tool_name}...\n'))
                     make_result = subprocess.run(['sudo', 'make', 'install'],
                                                cwd=repo_path, capture_output=True, text=True)
                     if make_result.returncode == 0:
-                        self.queue.put(('console', f'  ✓ {repo_name} installed\n'))
+                        self.queue.put(('console', f'  ✓ {tool_name} installed\n'))
                     else:
                         self.queue.put(('console', f'  ⚠️ Make install warning: {make_result.stderr}\n'))
 
@@ -904,6 +926,13 @@ Version 2.1.0 - Last Updated: November 2024"""
             ]
 
             for package in sm_packages:
+                # Check if package is already installed
+                pkg_check = subprocess.run(['pip3', 'show', package],
+                                          capture_output=True, text=True)
+                if pkg_check.returncode == 0:
+                    self.queue.put(('console', f'  ✓ {package} already installed (skipping)\n'))
+                    continue  # Skip to next package
+
                 self.queue.put(('console', f'  Installing {package}...\n'))
                 result = subprocess.run(['sudo', 'pip3', 'install', package],
                                       capture_output=True, text=True)
