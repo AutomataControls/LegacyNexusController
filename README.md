@@ -1,4 +1,4 @@
-# AutomataControls™ Legacy Integration Package
+# AutomataControls™ Remote Access Portal
 ## AutomataNexusBms Controller - Remote Access Portal for Raspberry Pi 4 Systems (32-bit OS)
 
 ![AutomataNexus](https://img.shields.io/badge/AutomataNexus-AI-06b6d4?labelColor=64748b)
@@ -15,7 +15,7 @@
 
 ## 🚀 Overview
 
-The AutomataControls™ Legacy Integration Package provides enterprise-grade remote access capabilities for Raspberry Pi 4 systems running 32-bit Raspberry Pi OS (Bullseye). This comprehensive solution features a React-based web portal with Neural Nexus™ styling, secure Cloudflare tunnel access, and full integration with Node-RED, terminal access, and Neural BMS.
+The AutomataControls™ Remote Access Portal provides enterprise-grade web access capabilities for Raspberry Pi 4 systems running 32-bit Raspberry Pi OS (Bullseye). This comprehensive solution features a React-based web portal with Neural Nexus™ styling, secure Cloudflare tunnel access, and full integration with Node-RED, terminal access, and Neural BMS.
 
 ## 🎯 Key Features
 
@@ -85,15 +85,12 @@ The portal includes a comprehensive SQLite3 database system with automatic manag
 - **Database Vacuuming**: Automatic space reclamation
 - **Indexed Tables**: Optimized query performance
 
-## 📦 Package Contents
+## 📦 Repository Contents
 
 ```
-Legacy Integration/
-├── setup-tunnel-gui.py          # GUI installer with Neural Nexus styling
-├── setup-tunnel.sh              # Command-line installer
-├── uninstall-tunnel-gui.py      # GUI uninstaller
-├── remote-access-portal/        # React TypeScript portal application
-│   ├── src/
+remote-access-portal/
+├── SetupNexus.py                # GUI installer with Neural Nexus styling
+├── src/                         # React TypeScript source code
 │   │   ├── App.tsx             # Main React application
 │   │   ├── components/         # React components
 │   │   │   ├── WeatherBar.tsx
@@ -117,8 +114,7 @@ Legacy Integration/
 │   ├── init.sh                 # Portal initialization script
 │   ├── init-databases.sh       # Database setup script
 │   ├── restartnexus.sh         # Quick restart script
-│   ├── claudecode.sh           # Claude Code reinstall script
-│   └── SetupNexus.py           # GUI installer
+│   └── claudecode.sh           # Claude Code reinstall script
 └── README.md                    # This file
 ```
 
