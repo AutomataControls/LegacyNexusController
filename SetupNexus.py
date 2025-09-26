@@ -840,12 +840,61 @@ Version 2.1.0 - Last Updated: November 2024"""
             # STEP 3.5: Install Sequent Microsystems hardware control libraries
             self.queue.put(('console', '═══════════════════════════════════════\n'))
             self.queue.put(('console', 'STEP 3.5: INSTALLING HARDWARE LIBRARIES\n'))
-            self.queue.put(('console', '═══════════════════════════════════════\n\n'))
+            self.queue.put(('console', '═══════════════════════════════════\n\n'))
             self.queue.put(('progress', (20, 'Installing hardware control libraries...')))
 
-            self.queue.put(('console', 'Installing Sequent Microsystems libraries...\n'))
+            # Enable I2C interface first
+            self.queue.put(('console', 'Enabling I2C interface...\n'))
+            subprocess.run(['sudo', 'raspi-config', 'nonint', 'do_i2c', '0'], capture_output=True)
 
-            # Install all required Sequent Microsystems packages
+            # Install i2c tools
+            self.queue.put(('console', 'Installing I2C tools...\n'))
+            subprocess.run(['sudo', 'apt-get', 'install', '-y', 'i2c-tools'], capture_output=True)
+
+            # Install Sequent Microsystems CLI tools from GitHub
+            sm_repos = [
+                ('megabas-rpi', 'https://github.com/SequentMicrosystems/megabas-rpi.git'),
+                ('16relind-rpi', 'https://github.com/SequentMicrosystems/16relind-rpi.git'),
+                ('16univin-rpi', 'https://github.com/SequentMicrosystems/16univin-rpi.git'),
+                ('16uout-rpi', 'https://github.com/SequentMicrosystems/16uout-rpi.git'),
+                ('8relind-rpi', 'https://github.com/SequentMicrosystems/8relind-rpi.git')
+            ]
+
+            # Change to Automata home directory for cloning
+            automata_home = '/home/Automata'
+            original_dir = os.getcwd()
+            os.chdir(automata_home)
+
+            for repo_name, repo_url in sm_repos:
+                repo_path = os.path.join(automata_home, repo_name)
+
+                if os.path.exists(repo_path):
+                    # Repository exists, pull latest changes
+                    self.queue.put(('console', f'Updating {repo_name}...\n'))
+                    subprocess.run(['git', 'pull'], cwd=repo_path, capture_output=True)
+                else:
+                    # Clone the repository
+                    self.queue.put(('console', f'Cloning {repo_name}...\n'))
+                    clone_result = subprocess.run(['git', 'clone', repo_url],
+                                                capture_output=True, text=True)
+                    if clone_result.returncode != 0:
+                        self.queue.put(('console', f'  ⚠️ Clone warning: {clone_result.stderr}\n'))
+
+                # Run make install
+                if os.path.exists(repo_path):
+                    self.queue.put(('console', f'  Installing {repo_name}...\n'))
+                    make_result = subprocess.run(['sudo', 'make', 'install'],
+                                               cwd=repo_path, capture_output=True, text=True)
+                    if make_result.returncode == 0:
+                        self.queue.put(('console', f'  ✓ {repo_name} installed\n'))
+                    else:
+                        self.queue.put(('console', f'  ⚠️ Make install warning: {make_result.stderr}\n'))
+
+            # Change back to original directory
+            os.chdir(original_dir)
+
+            # Install Python packages
+            self.queue.put(('console', '\nInstalling Python packages...\n'))
             sm_packages = [
                 'SMmegabas',      # MegaBAS controller
                 'SM16univin',     # 16 Universal inputs
@@ -862,14 +911,6 @@ Version 2.1.0 - Last Updated: November 2024"""
                     self.queue.put(('console', f'    ✓ {package} installed\n'))
                 else:
                     self.queue.put(('console', f'    ⚠️ {package} install warning: {result.stderr}\n'))
-
-            # Also install i2c tools
-            self.queue.put(('console', 'Installing I2C tools...\n'))
-            subprocess.run(['sudo', 'apt-get', 'install', '-y', 'i2c-tools'], capture_output=True)
-
-            # Enable I2C interface
-            self.queue.put(('console', 'Enabling I2C interface...\n'))
-            subprocess.run(['sudo', 'raspi-config', 'nonint', 'do_i2c', '0'], capture_output=True)
 
             self.queue.put(('console', '✓ Hardware control libraries installed\n\n'))
 
@@ -1068,7 +1109,11 @@ io.on('connection', (socket) => {
             self.queue.put(('console', 'STEP 6: GENERATING CONFIGURATION FILE\n'))
             self.queue.put(('console', '═══════════════════════════════════════\n\n'))
             self.queue.put(('progress', (30, 'Creating configuration...')))
-            
+
+            # Portal destination is ALWAYS /home/Automata/remote-access-portal
+            portal_dest = '/home/Automata/remote-access-portal'
+            user = 'Automata'  # ALWAYS Automata
+
             env_content = f"""# AutomataControls™ Configuration
 # Generated by installer on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 # © 2024 AutomataNexus, LLC. All rights reserved.
@@ -1135,7 +1180,8 @@ EMAIL_ADMIN=DevOps@automatacontrols.com
 DEFAULT_RECIPIENT=DevOps@automatacontrols.com
 """
             
-            env_path = f'{portal_dest}/.env'
+            # Make sure we write to the correct location
+            env_path = '/home/Automata/remote-access-portal/.env'
             self.queue.put(('console', f'Writing .env file to {env_path}...\n'))
 
             try:
@@ -1146,8 +1192,8 @@ DEFAULT_RECIPIENT=DevOps@automatacontrols.com
 
                 # Move to final location with sudo
                 subprocess.run(['sudo', 'cp', temp_env_path, env_path], check=True)
-                subprocess.run(['sudo', 'chown', f'{user}:{user}', env_path], check=True)
-                subprocess.run(['sudo', 'chmod', '600', env_path], check=True)
+                subprocess.run(['sudo', 'chown', 'Automata:Automata', env_path], check=True)
+                subprocess.run(['sudo', 'chmod', '644', env_path], check=True)  # Make readable
 
                 # Verify file was created
                 if os.path.exists(env_path):
