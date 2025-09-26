@@ -1116,6 +1116,20 @@ EMAIL_ADMIN=admin@automatacontrols.com
                 )
             ''')
 
+            metrics_cursor.execute('''
+                CREATE TABLE IF NOT EXISTS alarm_thresholds (
+                    id TEXT PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    parameter TEXT NOT NULL,
+                    minValue REAL,
+                    maxValue REAL,
+                    unit TEXT,
+                    enabled BOOLEAN DEFAULT 1,
+                    alarmType TEXT DEFAULT 'warning',
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+
             # Create indexes only if tables exist
             try:
                 metrics_cursor.execute('CREATE INDEX IF NOT EXISTS idx_metrics_timestamp ON system_metrics(timestamp)')
@@ -1147,11 +1161,14 @@ EMAIL_ADMIN=admin@automatacontrols.com
                 CREATE TABLE IF NOT EXISTS users (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT UNIQUE NOT NULL,
-                    password TEXT NOT NULL,
-                    role TEXT DEFAULT 'operator',
+                    email TEXT UNIQUE NOT NULL,
+                    password_hash TEXT NOT NULL,
+                    role TEXT DEFAULT 'viewer',
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     last_login DATETIME,
-                    active BOOLEAN DEFAULT 1
+                    is_active BOOLEAN DEFAULT 1,
+                    two_factor_enabled BOOLEAN DEFAULT 0,
+                    two_factor_secret TEXT
                 )
             ''')
 
@@ -1169,6 +1186,7 @@ EMAIL_ADMIN=admin@automatacontrols.com
             ''')
 
             try:
+                users_cursor.execute('CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)')
                 users_cursor.execute('CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token)')
                 users_cursor.execute('CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at)')
             except sqlite3.OperationalError as e:
@@ -1176,9 +1194,9 @@ EMAIL_ADMIN=admin@automatacontrols.com
 
             # Insert default DevOps user with hashed password
             users_cursor.execute('''
-                INSERT OR IGNORE INTO users (username, password, role)
-                VALUES (?, ?, ?)
-            ''', ('DevOps', '$2a$10$xH3.vEaHIJQZPKT3Ck.3MuH/KdV9XCZX8eXm16X9.KYZFGp6gC7.K', 'admin'))
+                INSERT OR IGNORE INTO users (username, email, password_hash, role)
+                VALUES (?, ?, ?, ?)
+            ''', ('DevOps', 'devops@automatacontrols.com', '$2a$10$xH3.vEaHIJQZPKT3Ck.3MuH/KdV9XCZX8eXm16X9.KYZFGp6gC7.K', 'admin'))
 
             users_db.commit()
             users_db.close()

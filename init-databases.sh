@@ -78,6 +78,18 @@ CREATE TABLE IF NOT EXISTS nodered_readings (
     extra_data TEXT
 );
 
+CREATE TABLE IF NOT EXISTS alarm_thresholds (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    parameter TEXT NOT NULL,
+    minValue REAL,
+    maxValue REAL,
+    unit TEXT,
+    enabled BOOLEAN DEFAULT 1,
+    alarmType TEXT DEFAULT 'warning',
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE INDEX IF NOT EXISTS idx_metrics_timestamp ON system_metrics(timestamp);
 CREATE INDEX IF NOT EXISTS idx_nodered_timestamp ON nodered_readings(timestamp);
 "
@@ -88,11 +100,14 @@ USERS_SQL="
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    role TEXT DEFAULT 'operator',
+    email TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    role TEXT DEFAULT 'viewer',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     last_login DATETIME,
-    active BOOLEAN DEFAULT 1
+    is_active BOOLEAN DEFAULT 1,
+    two_factor_enabled BOOLEAN DEFAULT 0,
+    two_factor_secret TEXT
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
@@ -106,6 +121,7 @@ CREATE TABLE IF NOT EXISTS sessions (
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
+CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);
 CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
 "
@@ -228,8 +244,8 @@ if [ "$USER_COUNT" = "0" ] || [ -z "$USER_COUNT" ]; then
     # Default password: Invertedskynet2$
     # Hash: $2a$10$xH3.vEaHIJQZPKT3Ck.3MuH/KdV9XCZX8eXm16X9.KYZFGp6gC7.K
     sqlite3 data/users.db "
-        INSERT INTO users (username, password, role)
-        VALUES ('DevOps', '\$2a\$10\$xH3.vEaHIJQZPKT3Ck.3MuH/KdV9XCZX8eXm16X9.KYZFGp6gC7.K', 'admin');
+        INSERT INTO users (username, email, password_hash, role)
+        VALUES ('DevOps', 'devops@automatacontrols.com', '\$2a\$10\$xH3.vEaHIJQZPKT3Ck.3MuH/KdV9XCZX8eXm16X9.KYZFGp6gC7.K', 'admin');
     " 2>/dev/null
 
     if [ $? -eq 0 ]; then
