@@ -206,6 +206,18 @@ class TunnelInstallerGUI:
             justify=tk.CENTER
         )
         license_text.pack(pady=(0, 5))
+
+        # Add clickable "View Full License" link
+        license_link = tk.Label(
+            license_frame,
+            text="[ View Full License Agreement ]",
+            font=('Inter', 9, 'underline'),
+            fg=COLORS['accent_primary'],
+            bg=COLORS['bg_secondary'],
+            cursor='hand2'
+        )
+        license_link.pack(pady=(0, 5))
+        license_link.bind('<Button-1>', lambda e: self.show_license_modal())
         
         # Accept license checkbox
         self.license_var = tk.BooleanVar()
@@ -465,6 +477,152 @@ class TunnelInstallerGUI:
             self.install_btn.config(state=tk.NORMAL, bg=COLORS['accent_primary'], fg='white')
         else:
             self.install_btn.config(state=tk.DISABLED, bg=COLORS['bg_tertiary'], fg=COLORS['text_primary'])
+
+    def show_license_modal(self):
+        """Display the full license agreement in a modal window"""
+        # Create modal window
+        modal = tk.Toplevel(self.root)
+        modal.title("AutomataControls™ Commercial License Agreement")
+        modal.configure(bg=COLORS['bg_primary'])
+
+        # Center the modal
+        modal_width = 800
+        modal_height = 600
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        x = (screen_width - modal_width) // 2
+        y = (screen_height - modal_height) // 2
+        modal.geometry(f'{modal_width}x{modal_height}+{x}+{y}')
+
+        # Make modal stay on top
+        modal.transient(self.root)
+        modal.grab_set()
+
+        # Header
+        header_frame = tk.Frame(modal, bg=COLORS['bg_secondary'], height=60)
+        header_frame.pack(fill=tk.X)
+        header_frame.pack_propagate(False)
+
+        title_label = tk.Label(
+            header_frame,
+            text="COMMERCIAL SOFTWARE LICENSE AGREEMENT",
+            font=('Inter', 14, 'bold'),
+            fg=COLORS['accent_primary'],
+            bg=COLORS['bg_secondary']
+        )
+        title_label.pack(pady=15)
+
+        # License text in scrollable area
+        text_frame = tk.Frame(modal, bg=COLORS['bg_primary'])
+        text_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
+
+        license_text = scrolledtext.ScrolledText(
+            text_frame,
+            font=('Courier', 10),
+            bg='white',
+            fg=COLORS['text_primary'],
+            wrap=tk.WORD,
+            bd=1,
+            relief=tk.SUNKEN
+        )
+        license_text.pack(fill=tk.BOTH, expand=True)
+
+        # Insert the full license agreement
+        full_license = """AUTOMATACONTROLS™ COMMERCIAL SOFTWARE LICENSE AGREEMENT
+
+IMPORTANT: READ CAREFULLY BEFORE USING THIS SOFTWARE
+
+This Commercial Software License Agreement ("Agreement") is a legal agreement between you (either an individual or a single entity) and AutomataNexus, LLC ("Licensor") for the AutomataNexusBms Controller software, including any associated media, printed materials, and electronic documentation (collectively, the "Software").
+
+BY INSTALLING, COPYING, OR OTHERWISE USING THE SOFTWARE, YOU AGREE TO BE BOUND BY THE TERMS OF THIS AGREEMENT.
+
+1. PROPRIETARY RIGHTS
+The Software is proprietary to AutomataNexus, LLC and constitutes valuable trade secrets. The Software is protected by copyright laws, international copyright treaties, and other intellectual property laws and treaties. The Software is licensed, not sold.
+
+2. GRANT OF LICENSE
+Subject to the terms and conditions of this Agreement and payment of applicable license fees, Licensor grants you a non-exclusive, non-transferable license to:
+a) Install and use the Software on a single controller device
+b) Make one backup copy for archival purposes only
+
+3. LICENSE RESTRICTIONS
+You may NOT:
+a) Copy, distribute, or disclose the Software to third parties
+b) Modify, adapt, translate, reverse engineer, decompile, or disassemble the Software
+c) Create derivative works based on the Software
+d) Remove any proprietary notices or labels from the Software
+e) Use the Software for any unlawful purpose
+f) Sublicense, rent, lease, or lend the Software
+g) Use the Software in a service bureau or time-sharing arrangement
+
+4. UNAUTHORIZED USE
+ANY UNAUTHORIZED USE, COPYING, OR DISTRIBUTION OF THIS SOFTWARE IS STRICTLY PROHIBITED AND WILL RESULT IN IMMEDIATE TERMINATION OF THIS LICENSE AND MAY SUBJECT YOU TO CIVIL AND CRIMINAL PENALTIES.
+
+5. TRADE SECRETS
+You acknowledge that the Software contains trade secrets and proprietary information of AutomataNexus, LLC. You agree to maintain the confidentiality of such information and not disclose it to any third party.
+
+6. OWNERSHIP
+AutomataNexus, LLC retains all right, title, and interest in and to the Software, including all intellectual property rights. This Agreement does not transfer any ownership rights to you.
+
+7. TERM AND TERMINATION
+This license is effective until terminated. Your rights under this license will terminate automatically without notice if you fail to comply with any term of this Agreement. Upon termination, you must destroy all copies of the Software in your possession.
+
+8. WARRANTY DISCLAIMER
+THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
+
+9. LIMITATION OF LIABILITY
+IN NO EVENT SHALL AUTOMATA NEXUS, LLC BE LIABLE FOR ANY SPECIAL, INCIDENTAL, INDIRECT, OR CONSEQUENTIAL DAMAGES WHATSOEVER ARISING OUT OF THE USE OF OR INABILITY TO USE THE SOFTWARE.
+
+10. EXPORT RESTRICTIONS
+You agree to comply with all applicable export and re-export control laws and regulations, including the Export Administration Regulations of the U.S. Department of Commerce.
+
+11. GOVERNING LAW
+This Agreement shall be governed by the laws of the State of Delaware, USA, without regard to its conflict of law provisions.
+
+12. ENTIRE AGREEMENT
+This Agreement constitutes the entire agreement between the parties and supersedes all prior or contemporaneous agreements or representations, written or oral, concerning the Software.
+
+13. COMMERCIAL LICENSE REQUIRED
+This Software requires a valid commercial license for production use. Contact AutomataNexus, LLC for licensing information:
+- Email: licensing@automatacontrols.com
+- Phone: 1-888-AUTOMATA
+
+14. AUDIT RIGHTS
+AutomataNexus, LLC reserves the right to audit your use of the Software to ensure compliance with this Agreement.
+
+15. INJUNCTIVE RELIEF
+You acknowledge that breach of this Agreement would cause irreparable harm to AutomataNexus, LLC for which monetary damages would be inadequate, and agree that AutomataNexus, LLC shall be entitled to seek injunctive relief.
+
+© 2024 AutomataNexus, LLC. All Rights Reserved.
+AutomataControls™ and AutomataNexusBms™ are trademarks of AutomataNexus, LLC.
+
+Version 2.1.0 - Last Updated: November 2024"""
+
+        license_text.insert('1.0', full_license)
+        license_text.config(state='disabled')  # Make read-only
+
+        # Button frame
+        button_frame = tk.Frame(modal, bg=COLORS['bg_primary'])
+        button_frame.pack(fill=tk.X, padx=20, pady=10)
+
+        # Close button
+        close_btn = tk.Button(
+            button_frame,
+            text="Close",
+            font=('Inter', 11),
+            bg=COLORS['bg_tertiary'],
+            fg=COLORS['text_primary'],
+            activebackground=COLORS['bg_secondary'],
+            activeforeground=COLORS['text_primary'],
+            command=modal.destroy,
+            padx=30,
+            pady=8,
+            relief=tk.RAISED,
+            bd=2
+        )
+        close_btn.pack(side=tk.RIGHT)
+
+        # X button in corner
+        modal.protocol("WM_DELETE_WINDOW", modal.destroy)
     
     def update_progress(self, percent, message=""):
         """Update progress bar and label"""
@@ -873,11 +1031,14 @@ EMAIL_ADMIN=admin@automatacontrols.com
 
             # 1. Create metrics.db
             self.queue.put(('console', 'Creating metrics database...\n'))
+            self.queue.put(('progress', (33, 'Initializing metrics database...')))
             metrics_db = sqlite3.connect(f'{data_dir}/metrics.db')
             metrics_cursor = metrics_db.cursor()
 
-            # Drop any existing views that might conflict
+            # Drop existing tables and views to avoid conflicts
             try:
+                metrics_cursor.execute("DROP TABLE IF EXISTS system_metrics")
+                metrics_cursor.execute("DROP TABLE IF EXISTS nodered_readings")
                 metrics_cursor.execute("DROP VIEW IF EXISTS system_metrics")
                 metrics_cursor.execute("DROP VIEW IF EXISTS nodered_readings")
             except:
@@ -927,11 +1088,14 @@ EMAIL_ADMIN=admin@automatacontrols.com
 
             # 2. Create users.db
             self.queue.put(('console', 'Creating users database...\n'))
+            self.queue.put(('progress', (34, 'Initializing users database...')))
             users_db = sqlite3.connect(f'{data_dir}/users.db')
             users_cursor = users_db.cursor()
 
-            # Drop any existing views that might conflict
+            # Drop existing tables and views to avoid conflicts
             try:
+                users_cursor.execute("DROP TABLE IF EXISTS users")
+                users_cursor.execute("DROP TABLE IF EXISTS sessions")
                 users_cursor.execute("DROP VIEW IF EXISTS users")
                 users_cursor.execute("DROP VIEW IF EXISTS sessions")
             except:
@@ -980,11 +1144,14 @@ EMAIL_ADMIN=admin@automatacontrols.com
 
             # 3. Create audit.db
             self.queue.put(('console', 'Creating audit database...\n'))
+            self.queue.put(('progress', (35, 'Initializing audit database...')))
             audit_db = sqlite3.connect(f'{data_dir}/audit.db')
             audit_cursor = audit_db.cursor()
 
-            # Drop any existing views that might conflict
+            # Drop existing tables and views to avoid conflicts
             try:
+                audit_cursor.execute("DROP TABLE IF EXISTS audit_logs")
+                audit_cursor.execute("DROP TABLE IF EXISTS system_events")
                 audit_cursor.execute("DROP VIEW IF EXISTS audit_logs")
                 audit_cursor.execute("DROP VIEW IF EXISTS system_events")
             except:
@@ -1029,11 +1196,15 @@ EMAIL_ADMIN=admin@automatacontrols.com
 
             # 4. Create alarms.db
             self.queue.put(('console', 'Creating alarms database...\n'))
+            self.queue.put(('progress', (36, 'Initializing alarms database...')))
             alarms_db = sqlite3.connect(f'{data_dir}/alarms.db')
             alarms_cursor = alarms_db.cursor()
 
-            # Drop any existing views that might conflict
+            # Drop existing tables and views to avoid conflicts
             try:
+                alarms_cursor.execute("DROP TABLE IF EXISTS alarm_configs")
+                alarms_cursor.execute("DROP TABLE IF EXISTS alarm_history")
+                alarms_cursor.execute("DROP TABLE IF EXISTS alarm_recipients")
                 alarms_cursor.execute("DROP VIEW IF EXISTS alarm_configs")
                 alarms_cursor.execute("DROP VIEW IF EXISTS alarm_history")
                 alarms_cursor.execute("DROP VIEW IF EXISTS alarm_recipients")
@@ -1093,11 +1264,14 @@ EMAIL_ADMIN=admin@automatacontrols.com
 
             # 5. Create weather.db
             self.queue.put(('console', 'Creating weather database...\n'))
+            self.queue.put(('progress', (37, 'Initializing weather database...')))
             weather_db = sqlite3.connect(f'{data_dir}/weather.db')
             weather_cursor = weather_db.cursor()
 
-            # Drop any existing views that might conflict
+            # Drop existing tables and views to avoid conflicts
             try:
+                weather_cursor.execute("DROP TABLE IF EXISTS weather_data")
+                weather_cursor.execute("DROP TABLE IF EXISTS weather_forecasts")
                 weather_cursor.execute("DROP VIEW IF EXISTS weather_data")
                 weather_cursor.execute("DROP VIEW IF EXISTS weather_forecasts")
             except:
