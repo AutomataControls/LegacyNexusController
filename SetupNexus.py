@@ -543,7 +543,13 @@ class TunnelInstallerGUI:
 
         # Make modal stay on top
         modal.transient(self.root)
-        modal.grab_set()
+
+        # Wait for window to be visible before grabbing
+        modal.update_idletasks()
+        modal.deiconify()  # Make sure window is shown
+
+        # Only grab after window is visible (delay grab_set to avoid error)
+        modal.after(100, lambda: modal.grab_set() if modal.winfo_viewable() else None)
 
         # Header
         header_frame = tk.Frame(modal, bg=COLORS['bg_secondary'], height=60)
