@@ -836,7 +836,43 @@ Version 2.1.0 - Last Updated: November 2024"""
                 self.queue.put(('console', '⚠️ Node.js not found - will use system default if available\n'))
             
             self.queue.put(('console', '✓ System dependencies installed\n\n'))
-            
+
+            # STEP 3.5: Install Sequent Microsystems hardware control libraries
+            self.queue.put(('console', '═══════════════════════════════════════\n'))
+            self.queue.put(('console', 'STEP 3.5: INSTALLING HARDWARE LIBRARIES\n'))
+            self.queue.put(('console', '═══════════════════════════════════════\n\n'))
+            self.queue.put(('progress', (20, 'Installing hardware control libraries...')))
+
+            self.queue.put(('console', 'Installing Sequent Microsystems libraries...\n'))
+
+            # Install all required Sequent Microsystems packages
+            sm_packages = [
+                'SMmegabas',      # MegaBAS controller
+                'SM16univin',     # 16 Universal inputs
+                'SM16relind',     # 16 Relays
+                'SM16uout',       # 16 0-10V outputs
+                'SM8relind'       # 8 Relays
+            ]
+
+            for package in sm_packages:
+                self.queue.put(('console', f'  Installing {package}...\n'))
+                result = subprocess.run(['sudo', 'pip3', 'install', package],
+                                      capture_output=True, text=True)
+                if result.returncode == 0:
+                    self.queue.put(('console', f'    ✓ {package} installed\n'))
+                else:
+                    self.queue.put(('console', f'    ⚠️ {package} install warning: {result.stderr}\n'))
+
+            # Also install i2c tools
+            self.queue.put(('console', 'Installing I2C tools...\n'))
+            subprocess.run(['sudo', 'apt-get', 'install', '-y', 'i2c-tools'], capture_output=True)
+
+            # Enable I2C interface
+            self.queue.put(('console', 'Enabling I2C interface...\n'))
+            subprocess.run(['sudo', 'raspi-config', 'nonint', 'do_i2c', '0'], capture_output=True)
+
+            self.queue.put(('console', '✓ Hardware control libraries installed\n\n'))
+
             # STEP 4: Install Node.js dependencies and build React app
             self.queue.put(('console', '═══════════════════════════════════════\n'))
             self.queue.put(('console', 'STEP 4: BUILDING REACT APPLICATION\n'))
