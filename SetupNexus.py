@@ -653,8 +653,16 @@ class TunnelInstallerGUI:
             
             # Install Node.js packages
             self.queue.put(('console', 'Installing dependencies (this may take a few minutes)...\n'))
-            npm_install = subprocess.run(['sudo', '-u', user, 'npm', 'install'], 
-                                       capture_output=True, text=True)
+            # Use full path to npm or run without sudo -u
+            npm_path = subprocess.run(['which', 'npm'], capture_output=True, text=True).stdout.strip()
+            if npm_path:
+                npm_install = subprocess.run(['sudo', '-u', user, npm_path, 'install'],
+                                           capture_output=True, text=True, cwd=portal_dest)
+            else:
+                # Fallback: run npm directly without user switch
+                npm_install = subprocess.run(['npm', 'install'],
+                                           capture_output=True, text=True, cwd=portal_dest)
+
             if npm_install.returncode != 0:
                 self.queue.put(('console', f'⚠️ npm install warnings: {npm_install.stderr}\n'))
             
@@ -662,8 +670,12 @@ class TunnelInstallerGUI:
             
             # Build React app with webpack
             self.queue.put(('console', 'Building React application with webpack...\n'))
-            build_result = subprocess.run(['sudo', '-u', user, 'npm', 'run', 'build'], 
-                                        capture_output=True, text=True)
+            if npm_path:
+                build_result = subprocess.run(['sudo', '-u', user, npm_path, 'run', 'build'],
+                                            capture_output=True, text=True, cwd=portal_dest)
+            else:
+                build_result = subprocess.run(['npm', 'run', 'build'],
+                                            capture_output=True, text=True, cwd=portal_dest)
             
             if build_result.returncode == 0:
                 self.queue.put(('console', '✓ React application built successfully\n'))
@@ -863,7 +875,16 @@ EMAIL_ADMIN=admin@automatacontrols.com
             self.queue.put(('console', 'Creating metrics database...\n'))
             metrics_db = sqlite3.connect(f'{data_dir}/metrics.db')
             metrics_cursor = metrics_db.cursor()
-            metrics_cursor.executescript('''
+
+            # Drop any existing views that might conflict
+            try:
+                metrics_cursor.execute("DROP VIEW IF EXISTS system_metrics")
+                metrics_cursor.execute("DROP VIEW IF EXISTS nodered_readings")
+            except:
+                pass
+
+            # Create tables
+            metrics_cursor.execute('''
                 CREATE TABLE IF NOT EXISTS system_metrics (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -873,8 +894,10 @@ EMAIL_ADMIN=admin@automatacontrols.com
                     disk_usage INTEGER,
                     uptime INTEGER,
                     load_average TEXT
-                );
+                )
+            ''')
 
+            metrics_cursor.execute('''
                 CREATE TABLE IF NOT EXISTS nodered_readings (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -888,11 +911,16 @@ EMAIL_ADMIN=admin@automatacontrols.com
                     valve_position REAL,
                     alarm_status TEXT,
                     extra_data TEXT
-                );
-
-                CREATE INDEX IF NOT EXISTS idx_metrics_timestamp ON system_metrics(timestamp);
-                CREATE INDEX IF NOT EXISTS idx_nodered_timestamp ON nodered_readings(timestamp);
+                )
             ''')
+
+            # Create indexes only if tables exist
+            try:
+                metrics_cursor.execute('CREATE INDEX IF NOT EXISTS idx_metrics_timestamp ON system_metrics(timestamp)')
+                metrics_cursor.execute('CREATE INDEX IF NOT EXISTS idx_nodered_timestamp ON nodered_readings(timestamp)')
+            except sqlite3.OperationalError as e:
+                self.queue.put(('console', f'⚠️ Index creation warning: {str(e)}\n'))
+
             metrics_db.commit()
             metrics_db.close()
             self.queue.put(('console', '✓ Metrics database created\n'))
@@ -901,7 +929,15 @@ EMAIL_ADMIN=admin@automatacontrols.com
             self.queue.put(('console', 'Creating users database...\n'))
             users_db = sqlite3.connect(f'{data_dir}/users.db')
             users_cursor = users_db.cursor()
-            users_cursor.executescript('''
+
+            # Drop any existing views that might conflict
+            try:
+                users_cursor.execute("DROP VIEW IF EXISTS users")
+                users_cursor.execute("DROP VIEW IF EXISTS sessions")
+            except:
+                pass
+
+            users_cursor.execute('''
                 CREATE TABLE IF NOT EXISTS users (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT UNIQUE NOT NULL,
@@ -910,8 +946,10 @@ EMAIL_ADMIN=admin@automatacontrols.com
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     last_login DATETIME,
                     active BOOLEAN DEFAULT 1
-                );
+                )
+            ''')
 
+            users_cursor.execute('''
                 CREATE TABLE IF NOT EXISTS sessions (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     user_id INTEGER NOT NULL,
@@ -921,11 +959,14 @@ EMAIL_ADMIN=admin@automatacontrols.com
                     ip_address TEXT,
                     user_agent TEXT,
                     FOREIGN KEY (user_id) REFERENCES users(id)
-                );
-
-                CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);
-                CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
+                )
             ''')
+
+            try:
+                users_cursor.execute('CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token)')
+                users_cursor.execute('CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at)')
+            except sqlite3.OperationalError as e:
+                self.queue.put(('console', f'⚠️ Index creation warning: {str(e)}\n'))
 
             # Insert default DevOps user with hashed password
             users_cursor.execute('''
@@ -941,7 +982,15 @@ EMAIL_ADMIN=admin@automatacontrols.com
             self.queue.put(('console', 'Creating audit database...\n'))
             audit_db = sqlite3.connect(f'{data_dir}/audit.db')
             audit_cursor = audit_db.cursor()
-            audit_cursor.executescript('''
+
+            # Drop any existing views that might conflict
+            try:
+                audit_cursor.execute("DROP VIEW IF EXISTS audit_logs")
+                audit_cursor.execute("DROP VIEW IF EXISTS system_events")
+            except:
+                pass
+
+            audit_cursor.execute('''
                 CREATE TABLE IF NOT EXISTS audit_logs (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -952,8 +1001,10 @@ EMAIL_ADMIN=admin@automatacontrols.com
                     details TEXT,
                     ip_address TEXT,
                     status TEXT DEFAULT 'success'
-                );
+                )
+            ''')
 
+            audit_cursor.execute('''
                 CREATE TABLE IF NOT EXISTS system_events (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -962,13 +1013,16 @@ EMAIL_ADMIN=admin@automatacontrols.com
                     source TEXT,
                     message TEXT,
                     details TEXT
-                );
-
-                CREATE INDEX IF NOT EXISTS idx_audit_timestamp ON audit_logs(timestamp);
-                CREATE INDEX IF NOT EXISTS idx_audit_user ON audit_logs(user_id);
-                CREATE INDEX IF NOT EXISTS idx_events_timestamp ON system_events(timestamp);
-                CREATE INDEX IF NOT EXISTS idx_events_type ON system_events(event_type);
+                )
             ''')
+
+            try:
+                audit_cursor.execute('CREATE INDEX IF NOT EXISTS idx_audit_timestamp ON audit_logs(timestamp)')
+                audit_cursor.execute('CREATE INDEX IF NOT EXISTS idx_audit_user ON audit_logs(user_id)')
+                audit_cursor.execute('CREATE INDEX IF NOT EXISTS idx_events_timestamp ON system_events(timestamp)')
+                audit_cursor.execute('CREATE INDEX IF NOT EXISTS idx_events_type ON system_events(event_type)')
+            except sqlite3.OperationalError as e:
+                self.queue.put(('console', f'⚠️ Index creation warning: {str(e)}\n'))
             audit_db.commit()
             audit_db.close()
             self.queue.put(('console', '✓ Audit database created\n'))
@@ -977,7 +1031,16 @@ EMAIL_ADMIN=admin@automatacontrols.com
             self.queue.put(('console', 'Creating alarms database...\n'))
             alarms_db = sqlite3.connect(f'{data_dir}/alarms.db')
             alarms_cursor = alarms_db.cursor()
-            alarms_cursor.executescript('''
+
+            # Drop any existing views that might conflict
+            try:
+                alarms_cursor.execute("DROP VIEW IF EXISTS alarm_configs")
+                alarms_cursor.execute("DROP VIEW IF EXISTS alarm_history")
+                alarms_cursor.execute("DROP VIEW IF EXISTS alarm_recipients")
+            except:
+                pass
+
+            alarms_cursor.execute('''
                 CREATE TABLE IF NOT EXISTS alarm_configs (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT UNIQUE NOT NULL,
@@ -990,8 +1053,10 @@ EMAIL_ADMIN=admin@automatacontrols.com
                     sms_enabled BOOLEAN DEFAULT 0,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-                );
+                )
+            ''')
 
+            alarms_cursor.execute('''
                 CREATE TABLE IF NOT EXISTS alarm_history (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     alarm_id INTEGER NOT NULL,
@@ -1003,8 +1068,10 @@ EMAIL_ADMIN=admin@automatacontrols.com
                     acknowledged_at DATETIME,
                     notes TEXT,
                     FOREIGN KEY (alarm_id) REFERENCES alarm_configs(id)
-                );
+                )
+            ''')
 
+            alarms_cursor.execute('''
                 CREATE TABLE IF NOT EXISTS alarm_recipients (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
@@ -1012,11 +1079,14 @@ EMAIL_ADMIN=admin@automatacontrols.com
                     phone TEXT,
                     active BOOLEAN DEFAULT 1,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-                );
-
-                CREATE INDEX IF NOT EXISTS idx_alarm_history_timestamp ON alarm_history(timestamp);
-                CREATE INDEX IF NOT EXISTS idx_alarm_history_alarm ON alarm_history(alarm_id);
+                )
             ''')
+
+            try:
+                alarms_cursor.execute('CREATE INDEX IF NOT EXISTS idx_alarm_history_timestamp ON alarm_history(timestamp)')
+                alarms_cursor.execute('CREATE INDEX IF NOT EXISTS idx_alarm_history_alarm ON alarm_history(alarm_id)')
+            except sqlite3.OperationalError as e:
+                self.queue.put(('console', f'⚠️ Index creation warning: {str(e)}\n'))
             alarms_db.commit()
             alarms_db.close()
             self.queue.put(('console', '✓ Alarms database created\n'))
@@ -1025,7 +1095,15 @@ EMAIL_ADMIN=admin@automatacontrols.com
             self.queue.put(('console', 'Creating weather database...\n'))
             weather_db = sqlite3.connect(f'{data_dir}/weather.db')
             weather_cursor = weather_db.cursor()
-            weather_cursor.executescript('''
+
+            # Drop any existing views that might conflict
+            try:
+                weather_cursor.execute("DROP VIEW IF EXISTS weather_data")
+                weather_cursor.execute("DROP VIEW IF EXISTS weather_forecasts")
+            except:
+                pass
+
+            weather_cursor.execute('''
                 CREATE TABLE IF NOT EXISTS weather_data (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -1039,8 +1117,10 @@ EMAIL_ADMIN=admin@automatacontrols.com
                     sunrise INTEGER,
                     sunset INTEGER,
                     location TEXT
-                );
+                )
+            ''')
 
+            weather_cursor.execute('''
                 CREATE TABLE IF NOT EXISTS weather_forecasts (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -1051,11 +1131,14 @@ EMAIL_ADMIN=admin@automatacontrols.com
                     precipitation_chance REAL,
                     wind_speed REAL,
                     location TEXT
-                );
-
-                CREATE INDEX IF NOT EXISTS idx_weather_timestamp ON weather_data(timestamp);
-                CREATE INDEX IF NOT EXISTS idx_forecast_timestamp ON weather_forecasts(forecast_time);
+                )
             ''')
+
+            try:
+                weather_cursor.execute('CREATE INDEX IF NOT EXISTS idx_weather_timestamp ON weather_data(timestamp)')
+                weather_cursor.execute('CREATE INDEX IF NOT EXISTS idx_forecast_timestamp ON weather_forecasts(forecast_time)')
+            except sqlite3.OperationalError as e:
+                self.queue.put(('console', f'⚠️ Index creation warning: {str(e)}\n'))
             weather_db.commit()
             weather_db.close()
             self.queue.put(('console', '✓ Weather database created\n'))
@@ -1453,8 +1536,12 @@ ingress:
             
             # Install PM2 globally
             self.queue.put(('console', 'Installing PM2 globally...\n'))
-            pm2_install = subprocess.run(['sudo', 'npm', 'install', '-g', 'pm2'], 
-                                       capture_output=True, text=True)
+            if npm_path:
+                pm2_install = subprocess.run(['sudo', npm_path, 'install', '-g', 'pm2'],
+                                           capture_output=True, text=True)
+            else:
+                pm2_install = subprocess.run(['sudo', 'npm', 'install', '-g', 'pm2'],
+                                           capture_output=True, text=True)
             if pm2_install.returncode == 0:
                 self.queue.put(('console', '✓ PM2 installed\n'))
             else:
@@ -1750,8 +1837,12 @@ Comment=Launch AutomataNexus Portal in fullscreen
                 self.queue.put(('progress', (95, 'Installing Claude Code...')))
                 
                 self.queue.put(('console', 'Installing Claude Code CLI...\n'))
-                claude_install = subprocess.run(['sudo', 'npm', 'install', '-g', '@anthropic-ai/claude-code'], 
-                                              capture_output=True, text=True)
+                if npm_path:
+                    claude_install = subprocess.run(['sudo', npm_path, 'install', '-g', '@anthropic-ai/claude-code'],
+                                                  capture_output=True, text=True)
+                else:
+                    claude_install = subprocess.run(['sudo', 'npm', 'install', '-g', '@anthropic-ai/claude-code'],
+                                                  capture_output=True, text=True)
                 
                 if claude_install.returncode == 0:
                     self.queue.put(('console', '✓ Claude Code CLI installed successfully\n'))
