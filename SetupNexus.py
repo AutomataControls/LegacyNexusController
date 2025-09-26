@@ -516,7 +516,8 @@ class TunnelInstallerGUI:
         text_frame = tk.Frame(modal, bg=COLORS['bg_primary'])
         text_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
 
-        license_text = scrolledtext.ScrolledText(
+        # Create text widget with scrollbar
+        text_widget = tk.Text(
             text_frame,
             font=('Courier', 10),
             bg='white',
@@ -525,7 +526,14 @@ class TunnelInstallerGUI:
             bd=1,
             relief=tk.SUNKEN
         )
-        license_text.pack(fill=tk.BOTH, expand=True)
+
+        # Add scrollbar
+        scrollbar = tk.Scrollbar(text_frame, command=text_widget.yview)
+        text_widget.configure(yscrollcommand=scrollbar.set)
+
+        # Pack widgets
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        text_widget.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
         # Insert the full license agreement
         full_license = """AUTOMATACONTROLS™ COMMERCIAL SOFTWARE LICENSE AGREEMENT
@@ -597,8 +605,8 @@ AutomataControls™ and AutomataNexusBms™ are trademarks of AutomataNexus, LLC
 
 Version 2.1.0 - Last Updated: November 2024"""
 
-        license_text.insert('1.0', full_license)
-        license_text.config(state='disabled')  # Make read-only
+        text_widget.insert('1.0', full_license)
+        text_widget.config(state='disabled')  # Make read-only
 
         # Button frame
         button_frame = tk.Frame(modal, bg=COLORS['bg_primary'])
