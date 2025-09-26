@@ -137,7 +137,7 @@ Legacy Integration/
 1. **Clone the repository:**
 ```bash
 cd /home/Automata
-git clone https://github.com/AutomataControls/LegacyNexusController.git remote-access-portal
+git clone https://github.com/AutomataControls/remote-access-portal.git
 cd remote-access-portal
 ```
 
@@ -145,8 +145,6 @@ cd remote-access-portal
 ```bash
 sudo python3 SetupNexus.py
 ```
-
-**Note:** The installer must be run from within the `/home/Automata/remote-access-portal` directory.
 
 The installer will:
 1. Display Neural Nexus styled interface
