@@ -2294,18 +2294,50 @@ WantedBy=multi-user.target
             
             # Save PM2 configuration
             subprocess.run(['sudo', '-u', user, 'pm2', 'save'], capture_output=True)
-            
-            # Setup PM2 to start on boot
-            pm2_startup = subprocess.run(['sudo', '-u', user, 'pm2', 'startup', 'systemd', 
-                                        '-u', user, '--hp', f'/home/{user}'], 
-                                       capture_output=True, text=True)
+
+            # Setup PM2 to start on boot - this generates a command that must be run as root
+            self.queue.put(('console', 'Configuring PM2 to start on boot...\n'))
+            pm2_startup_cmd = subprocess.run(['sudo', '-u', user, 'pm2', 'startup', 'systemd',
+                                            '-u', user, '--hp', f'/home/{user}'],
+                                           capture_output=True, text=True)
+
+            # The output contains the command to run, extract and execute it
+            if pm2_startup_cmd.stdout:
+                # PM2 outputs a command like: sudo env PATH=... pm2 startup systemd...
+                # We need to execute this command
+                lines = pm2_startup_cmd.stdout.split('\n')
+                for line in lines:
+                    if 'sudo env PATH=' in line:
+                        # Execute the generated command
+                        subprocess.run(line, shell=True, capture_output=True)
+                        break
+
+            # Alternative method: directly create the systemd service
+            subprocess.run(['sudo', 'env', f'PATH={os.environ.get("PATH", "/usr/bin:/bin")}',
+                          f'PM2_HOME=/home/{user}/.pm2', 'pm2', 'startup', 'systemd',
+                          '-u', user, '--hp', f'/home/{user}'], capture_output=True)
+
             self.queue.put(('console', '✓ PM2 configured to start on boot\n'))
             
             # Start cloudflared with systemd
             self.queue.put(('console', 'Starting Cloudflare tunnel service...\n'))
             subprocess.run(['sudo', 'systemctl', 'daemon-reload'], check=True)
-            subprocess.run(['sudo', 'systemctl', 'enable', 'cloudflared'], check=True)
-            subprocess.run(['sudo', 'systemctl', 'start', 'cloudflared'], check=True)
+
+            # Enable the service to start on boot
+            enable_result = subprocess.run(['sudo', 'systemctl', 'enable', 'cloudflared'],
+                                         capture_output=True, text=True)
+            if enable_result.returncode == 0:
+                self.queue.put(('console', '✓ Cloudflare tunnel enabled for boot\n'))
+            else:
+                self.queue.put(('console', f'⚠️ Could not enable tunnel: {enable_result.stderr}\n'))
+
+            # Start the service now
+            start_result = subprocess.run(['sudo', 'systemctl', 'start', 'cloudflared'],
+                                        capture_output=True, text=True)
+            if start_result.returncode == 0:
+                self.queue.put(('console', '✓ Cloudflare tunnel started\n'))
+            else:
+                self.queue.put(('console', f'⚠️ Could not start tunnel: {start_result.stderr}\n'))
             
             # Wait for services to start
             time.sleep(5)
