@@ -1,5 +1,5 @@
 # AutomataControls™ Legacy Integration Package
-## AutomataNexusBms Controller - Remote Access Portal for Raspberry Pi 4 Systems
+## AutomataNexusBms Controller - Remote Access Portal for Raspberry Pi 4 Systems (32-bit OS)
 
 ![AutomataNexus](https://img.shields.io/badge/AutomataNexus-AI-06b6d4?labelColor=64748b)
 ![Platform](https://img.shields.io/badge/Platform-Raspberry%20Pi%204-c51a4a)
@@ -15,7 +15,7 @@
 
 ## 🚀 Overview
 
-The AutomataControls™ Legacy Integration Package provides enterprise-grade remote access capabilities for Raspberry Pi 4 systems running 32-bit Bullseye OS. This comprehensive solution features a React-based web portal with Neural Nexus™ styling, secure Cloudflare tunnel access, and full integration with Node-RED, terminal access, and Neural BMS.
+The AutomataControls™ Legacy Integration Package provides enterprise-grade remote access capabilities for Raspberry Pi 4 systems running 32-bit Raspberry Pi OS (Bullseye). This comprehensive solution features a React-based web portal with Neural Nexus™ styling, secure Cloudflare tunnel access, and full integration with Node-RED, terminal access, and Neural BMS.
 
 ## 🎯 Key Features
 
@@ -116,7 +116,9 @@ Legacy Integration/
 │   ├── ecosystem.config.js     # PM2 configuration
 │   ├── init.sh                 # Portal initialization script
 │   ├── init-databases.sh       # Database setup script
-│   └── restartnexus.sh         # Quick restart script
+│   ├── restartnexus.sh         # Quick restart script
+│   ├── claudecode.sh           # Claude Code reinstall script
+│   └── SetupNexus.py           # GUI installer
 └── README.md                    # This file
 ```
 
@@ -124,7 +126,7 @@ Legacy Integration/
 
 ### Prerequisites
 - Raspberry Pi 4 with 64GB SD card
-- Raspbian OS Bullseye 32-bit
+- Raspberry Pi OS Bullseye 32-bit (IMPORTANT: Must be 32-bit, not 64-bit)
 - Node.js 18+ and npm
 - Node-RED installed and running on port 1880
 - Internet connection
@@ -135,27 +137,16 @@ Legacy Integration/
 1. **Clone the repository:**
 ```bash
 cd /home/Automata
-git clone https://github.com/AutomataControls/LegacyNexusController.git
-cd LegacyNexusController
+git clone https://github.com/AutomataControls/LegacyNexusController.git remote-access-portal
+cd remote-access-portal
 ```
 
-2. **Make installers executable:**
+2. **Run the GUI installer:**
 ```bash
-chmod +x setup-tunnel-gui.py
-chmod +x setup-tunnel.sh
+sudo python3 SetupNexus.py
 ```
 
-3. **Run the installer:**
-
-#### GUI Installation (Recommended)
-```bash
-sudo python3 setup-tunnel-gui.py
-```
-
-#### Command-Line Installation
-```bash
-sudo bash setup-tunnel.sh
-```
+**Note:** The installer must be run from within the `/home/Automata/remote-access-portal` directory.
 
 The installer will:
 1. Display Neural Nexus styled interface
@@ -295,7 +286,7 @@ After successful installation, your portal will be accessible at:
 ### Minimum Requirements
 - Raspberry Pi 4 (2GB RAM minimum, 4GB recommended)
 - 64GB SD card (Class 10 or better)
-- Raspbian OS Bullseye 32-bit
+- Raspberry Pi OS Bullseye 32-bit (MUST be 32-bit for compatibility)
 - Active internet connection
 
 ### Software Dependencies
