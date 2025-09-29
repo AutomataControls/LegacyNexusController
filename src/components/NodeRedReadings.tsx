@@ -98,7 +98,18 @@ const NodeRedReadings: React.FC = () => {
   // Auto adjust setpoint based on outdoor temperature
   useEffect(() => {
     if (autoSetpointMode && outdoorTemp !== null) {
-      const newSetpoint = outdoorTemp > 75 ? 75 : 85;
+      // When outdoor temp > 70°F, set to 75°F
+      // When outdoor temp < 68°F, set to 85°F
+      // Between 68-70°F, keep current setpoint (hysteresis zone)
+      let newSetpoint = userSetpoint;
+
+      if (outdoorTemp > 70) {
+        newSetpoint = 75;
+      } else if (outdoorTemp < 68) {
+        newSetpoint = 85;
+      }
+      // If outdoor temp is between 68-70°F, don't change setpoint (prevents oscillation)
+
       if (newSetpoint !== userSetpoint) {
         console.log(`Auto adjusting setpoint: OAT=${outdoorTemp}°F, Setting to ${newSetpoint}°F`);
         setUserSetpoint(newSetpoint);
@@ -298,7 +309,7 @@ const NodeRedReadings: React.FC = () => {
             color: '#6b7280',
             marginLeft: '5px'
           }}>
-            {autoSetpointMode ? 'OAT>75°=75° | OAT≤75°=85°' : 'Manual'}
+            {autoSetpointMode ? 'OAT>70°=75° | OAT<68°=85°' : 'Manual'}
           </span>
         </div>
         
